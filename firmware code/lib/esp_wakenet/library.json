@@ -1,0 +1,7 @@
+{
+  "name": "StopmateWakeNet",
+  "version": "2.0.0",
+  "build": {
+    "extraScript": "build.py"
+  }
+}

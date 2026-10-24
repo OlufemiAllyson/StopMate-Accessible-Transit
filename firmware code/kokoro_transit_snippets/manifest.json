@@ -1,0 +1,661 @@
+{
+  "engine": "Kokoro-82M",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "sample_rate": 24000,
+  "channels": 1,
+  "encoding": "PCM_16",
+  "hardware": "CPU",
+  "template": "Bus [number] for route [route name] will arrive in [number] minutes.",
+  "rts_route_numbers": [
+    1,
+    3,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    15,
+    17,
+    20,
+    21,
+    23,
+    26,
+    33,
+    37,
+    38,
+    43,
+    52,
+    55,
+    75,
+    76,
+    118,
+    126
+  ],
+  "arrival_minutes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ],
+  "clips": [
+    {
+      "file": "phrases/bus.wav",
+      "text": "Bus",
+      "synthesis_text": "Bus,",
+      "seconds": 0.549,
+      "phonemes": "b\u02c8\u028cs,"
+    },
+    {
+      "file": "phrases/for_route.wav",
+      "text": "for route",
+      "synthesis_text": "for route,",
+      "seconds": 0.698,
+      "phonemes": "f\u0254\u0279 \u0279\u02c8ut,"
+    },
+    {
+      "file": "phrases/will_arrive_in.wav",
+      "text": "will arrive in",
+      "synthesis_text": "will arrive in,",
+      "seconds": 0.921,
+      "phonemes": "w\u026al \u0259\u0279\u02c8Iv \u02c8\u026an,"
+    },
+    {
+      "file": "phrases/minute.wav",
+      "text": "minute",
+      "synthesis_text": "minute.",
+      "seconds": 0.6,
+      "phonemes": "m\u02c8\u026an\u0259t."
+    },
+    {
+      "file": "phrases/minutes.wav",
+      "text": "minutes",
+      "synthesis_text": "minutes.",
+      "seconds": 0.668,
+      "phonemes": "m\u02c8\u026an\u0259ts."
+    },
+    {
+      "file": "routes/butler_plaza_to_the_hub.wav",
+      "text": "Butler Plaza to the Hub",
+      "synthesis_text": "Butler Plaza to the Hub,",
+      "seconds": 1.396,
+      "phonemes": "b\u02c8\u028ctl\u0259\u0279 pl\u02c8\u0251z\u0259 t\u0259 \u00f0\u0259 h\u02c8\u028cb,"
+    },
+    {
+      "file": "routes/reitz_union_to_liv_apartments.wav",
+      "text": "Reitz Union to Liv Apartments",
+      "synthesis_text": "[Reitz](/\u0279\u02c8Its/) Union to [Liv](/l\u02c8\u026av/) Apartments,",
+      "seconds": 1.685,
+      "phonemes": "\u0279\u02c8Its j\u02c8unj\u0259n t\u0259 l\u02c8\u026av \u0259p\u02c8\u0251\u0279tm\u0259nts,"
+    },
+    {
+      "file": "numbers/001.wav",
+      "text": "one",
+      "synthesis_text": "one,",
+      "seconds": 0.519,
+      "phonemes": "w\u02c8\u028cn,"
+    },
+    {
+      "file": "numbers/002.wav",
+      "text": "two",
+      "synthesis_text": "two,",
+      "seconds": 0.48,
+      "phonemes": "t\u02c8u,"
+    },
+    {
+      "file": "numbers/003.wav",
+      "text": "three",
+      "synthesis_text": "three,",
+      "seconds": 0.55,
+      "phonemes": "\u03b8\u0279\u02c8i,"
+    },
+    {
+      "file": "numbers/004.wav",
+      "text": "four",
+      "synthesis_text": "four,",
+      "seconds": 0.544,
+      "phonemes": "f\u02c8\u0254\u0279,"
+    },
+    {
+      "file": "numbers/005.wav",
+      "text": "five",
+      "synthesis_text": "five,",
+      "seconds": 0.58,
+      "phonemes": "f\u02c8Iv,"
+    },
+    {
+      "file": "numbers/006.wav",
+      "text": "six",
+      "synthesis_text": "six,",
+      "seconds": 0.604,
+      "phonemes": "s\u02c8\u026aks,"
+    },
+    {
+      "file": "numbers/007.wav",
+      "text": "seven",
+      "synthesis_text": "seven,",
+      "seconds": 0.601,
+      "phonemes": "s\u02c8\u025bv\u0259n,"
+    },
+    {
+      "file": "numbers/008.wav",
+      "text": "eight",
+      "synthesis_text": "eight,",
+      "seconds": 0.511,
+      "phonemes": "\u02c8At,"
+    },
+    {
+      "file": "numbers/009.wav",
+      "text": "nine",
+      "synthesis_text": "nine,",
+      "seconds": 0.541,
+      "phonemes": "n\u02c8In,"
+    },
+    {
+      "file": "numbers/010.wav",
+      "text": "ten",
+      "synthesis_text": "ten,",
+      "seconds": 0.525,
+      "phonemes": "t\u02c8\u025bn,"
+    },
+    {
+      "file": "numbers/011.wav",
+      "text": "eleven",
+      "synthesis_text": "eleven,",
+      "seconds": 0.628,
+      "phonemes": "\u0259l\u02c8\u025bv\u1d4an,"
+    },
+    {
+      "file": "numbers/012.wav",
+      "text": "twelve",
+      "synthesis_text": "twelve,",
+      "seconds": 0.622,
+      "phonemes": "tw\u02c8\u025blv,"
+    },
+    {
+      "file": "numbers/013.wav",
+      "text": "thirteen",
+      "synthesis_text": "thirteen,",
+      "seconds": 0.742,
+      "phonemes": "\u03b8\u02cc\u025c\u0279t\u02c8in,"
+    },
+    {
+      "file": "numbers/014.wav",
+      "text": "fourteen",
+      "synthesis_text": "fourteen,",
+      "seconds": 0.745,
+      "phonemes": "f\u02cc\u0254\u0279t\u02c8in,"
+    },
+    {
+      "file": "numbers/015.wav",
+      "text": "fifteen",
+      "synthesis_text": "fifteen,",
+      "seconds": 0.731,
+      "phonemes": "f\u02cc\u026aft\u02c8in,"
+    },
+    {
+      "file": "numbers/016.wav",
+      "text": "sixteen",
+      "synthesis_text": "sixteen,",
+      "seconds": 0.771,
+      "phonemes": "s\u02cc\u026akst\u02c8in,"
+    },
+    {
+      "file": "numbers/017.wav",
+      "text": "seventeen",
+      "synthesis_text": "seventeen,",
+      "seconds": 0.823,
+      "phonemes": "s\u02cc\u025bv\u0259nt\u02c8in,"
+    },
+    {
+      "file": "numbers/018.wav",
+      "text": "eighteen",
+      "synthesis_text": "eighteen,",
+      "seconds": 0.674,
+      "phonemes": "\u02ccAt\u02c8in,"
+    },
+    {
+      "file": "numbers/019.wav",
+      "text": "nineteen",
+      "synthesis_text": "nineteen,",
+      "seconds": 0.721,
+      "phonemes": "n\u02ccInt\u02c8in,"
+    },
+    {
+      "file": "numbers/020.wav",
+      "text": "twenty",
+      "synthesis_text": "twenty,",
+      "seconds": 0.68,
+      "phonemes": "tw\u02c8\u025bnti,"
+    },
+    {
+      "file": "numbers/021.wav",
+      "text": "twenty one",
+      "synthesis_text": "twenty one,",
+      "seconds": 0.762,
+      "phonemes": "tw\u02c8\u025bnti w\u02c8\u028cn,"
+    },
+    {
+      "file": "numbers/022.wav",
+      "text": "twenty two",
+      "synthesis_text": "twenty two,",
+      "seconds": 0.824,
+      "phonemes": "tw\u02c8\u025bnti t\u02c8u,"
+    },
+    {
+      "file": "numbers/023.wav",
+      "text": "twenty three",
+      "synthesis_text": "twenty three,",
+      "seconds": 0.822,
+      "phonemes": "tw\u02c8\u025bnti \u03b8\u0279\u02c8i,"
+    },
+    {
+      "file": "numbers/024.wav",
+      "text": "twenty four",
+      "synthesis_text": "twenty four,",
+      "seconds": 0.785,
+      "phonemes": "tw\u02c8\u025bnti f\u02c8\u0254\u0279,"
+    },
+    {
+      "file": "numbers/025.wav",
+      "text": "twenty five",
+      "synthesis_text": "twenty five,",
+      "seconds": 0.8,
+      "phonemes": "tw\u02c8\u025bnti f\u02c8Iv,"
+    },
+    {
+      "file": "numbers/026.wav",
+      "text": "twenty six",
+      "synthesis_text": "twenty six,",
+      "seconds": 0.851,
+      "phonemes": "tw\u02c8\u025bnti s\u02c8\u026aks,"
+    },
+    {
+      "file": "numbers/027.wav",
+      "text": "twenty seven",
+      "synthesis_text": "twenty seven,",
+      "seconds": 0.877,
+      "phonemes": "tw\u02c8\u025bnti s\u02c8\u025bv\u0259n,"
+    },
+    {
+      "file": "numbers/028.wav",
+      "text": "twenty eight",
+      "synthesis_text": "twenty eight,",
+      "seconds": 0.773,
+      "phonemes": "tw\u02c8\u025bnti \u02c8At,"
+    },
+    {
+      "file": "numbers/029.wav",
+      "text": "twenty nine",
+      "synthesis_text": "twenty nine,",
+      "seconds": 0.818,
+      "phonemes": "tw\u02c8\u025bnti n\u02c8In,"
+    },
+    {
+      "file": "numbers/030.wav",
+      "text": "thirty",
+      "synthesis_text": "thirty,",
+      "seconds": 0.641,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti,"
+    },
+    {
+      "file": "numbers/031.wav",
+      "text": "thirty one",
+      "synthesis_text": "thirty one,",
+      "seconds": 0.804,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti w\u02c8\u028cn,"
+    },
+    {
+      "file": "numbers/032.wav",
+      "text": "thirty two",
+      "synthesis_text": "thirty two,",
+      "seconds": 0.833,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti t\u02c8u,"
+    },
+    {
+      "file": "numbers/033.wav",
+      "text": "thirty three",
+      "synthesis_text": "thirty three,",
+      "seconds": 0.87,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti \u03b8\u0279\u02c8i,"
+    },
+    {
+      "file": "numbers/034.wav",
+      "text": "thirty four",
+      "synthesis_text": "thirty four,",
+      "seconds": 0.797,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti f\u02c8\u0254\u0279,"
+    },
+    {
+      "file": "numbers/035.wav",
+      "text": "thirty five",
+      "synthesis_text": "thirty five,",
+      "seconds": 0.846,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti f\u02c8Iv,"
+    },
+    {
+      "file": "numbers/036.wav",
+      "text": "thirty six",
+      "synthesis_text": "thirty six,",
+      "seconds": 0.901,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti s\u02c8\u026aks,"
+    },
+    {
+      "file": "numbers/037.wav",
+      "text": "thirty seven",
+      "synthesis_text": "thirty seven,",
+      "seconds": 0.95,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti s\u02c8\u025bv\u0259n,"
+    },
+    {
+      "file": "numbers/038.wav",
+      "text": "thirty eight",
+      "synthesis_text": "thirty eight,",
+      "seconds": 0.811,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti \u02c8At,"
+    },
+    {
+      "file": "numbers/039.wav",
+      "text": "thirty nine",
+      "synthesis_text": "thirty nine,",
+      "seconds": 0.834,
+      "phonemes": "\u03b8\u02c8\u025c\u0279Ti n\u02c8In,"
+    },
+    {
+      "file": "numbers/040.wav",
+      "text": "forty",
+      "synthesis_text": "forty,",
+      "seconds": 0.637,
+      "phonemes": "f\u02c8\u0254\u0279Ti,"
+    },
+    {
+      "file": "numbers/041.wav",
+      "text": "forty one",
+      "synthesis_text": "forty one,",
+      "seconds": 0.817,
+      "phonemes": "f\u02c8\u0254\u0279Ti w\u02c8\u028cn,"
+    },
+    {
+      "file": "numbers/042.wav",
+      "text": "forty two",
+      "synthesis_text": "forty two,",
+      "seconds": 0.832,
+      "phonemes": "f\u02c8\u0254\u0279Ti t\u02c8u,"
+    },
+    {
+      "file": "numbers/043.wav",
+      "text": "forty three",
+      "synthesis_text": "forty three,",
+      "seconds": 0.848,
+      "phonemes": "f\u02c8\u0254\u0279Ti \u03b8\u0279\u02c8i,"
+    },
+    {
+      "file": "numbers/044.wav",
+      "text": "forty four",
+      "synthesis_text": "forty four,",
+      "seconds": 0.819,
+      "phonemes": "f\u02c8\u0254\u0279Ti f\u02c8\u0254\u0279,"
+    },
+    {
+      "file": "numbers/045.wav",
+      "text": "forty five",
+      "synthesis_text": "forty five,",
+      "seconds": 0.865,
+      "phonemes": "f\u02c8\u0254\u0279Ti f\u02c8Iv,"
+    },
+    {
+      "file": "numbers/046.wav",
+      "text": "forty six",
+      "synthesis_text": "forty six,",
+      "seconds": 0.884,
+      "phonemes": "f\u02c8\u0254\u0279Ti s\u02c8\u026aks,"
+    },
+    {
+      "file": "numbers/047.wav",
+      "text": "forty seven",
+      "synthesis_text": "forty seven,",
+      "seconds": 0.909,
+      "phonemes": "f\u02c8\u0254\u0279Ti s\u02c8\u025bv\u0259n,"
+    },
+    {
+      "file": "numbers/048.wav",
+      "text": "forty eight",
+      "synthesis_text": "forty eight,",
+      "seconds": 0.813,
+      "phonemes": "f\u02c8\u0254\u0279Ti \u02c8At,"
+    },
+    {
+      "file": "numbers/049.wav",
+      "text": "forty nine",
+      "synthesis_text": "forty nine,",
+      "seconds": 0.863,
+      "phonemes": "f\u02c8\u0254\u0279Ti n\u02c8In,"
+    },
+    {
+      "file": "numbers/050.wav",
+      "text": "fifty",
+      "synthesis_text": "fifty,",
+      "seconds": 0.682,
+      "phonemes": "f\u02c8\u026afti,"
+    },
+    {
+      "file": "numbers/051.wav",
+      "text": "fifty one",
+      "synthesis_text": "fifty one,",
+      "seconds": 0.784,
+      "phonemes": "f\u02c8\u026afti w\u02c8\u028cn,"
+    },
+    {
+      "file": "numbers/052.wav",
+      "text": "fifty two",
+      "synthesis_text": "fifty two,",
+      "seconds": 0.813,
+      "phonemes": "f\u02c8\u026afti t\u02c8u,"
+    },
+    {
+      "file": "numbers/053.wav",
+      "text": "fifty three",
+      "synthesis_text": "fifty three,",
+      "seconds": 0.822,
+      "phonemes": "f\u02c8\u026afti \u03b8\u0279\u02c8i,"
+    },
+    {
+      "file": "numbers/054.wav",
+      "text": "fifty four",
+      "synthesis_text": "fifty four,",
+      "seconds": 0.822,
+      "phonemes": "f\u02c8\u026afti f\u02c8\u0254\u0279,"
+    },
+    {
+      "file": "numbers/055.wav",
+      "text": "fifty five",
+      "synthesis_text": "fifty five,",
+      "seconds": 0.842,
+      "phonemes": "f\u02c8\u026afti f\u02c8Iv,"
+    },
+    {
+      "file": "numbers/056.wav",
+      "text": "fifty six",
+      "synthesis_text": "fifty six,",
+      "seconds": 0.892,
+      "phonemes": "f\u02c8\u026afti s\u02c8\u026aks,"
+    },
+    {
+      "file": "numbers/057.wav",
+      "text": "fifty seven",
+      "synthesis_text": "fifty seven,",
+      "seconds": 0.89,
+      "phonemes": "f\u02c8\u026afti s\u02c8\u025bv\u0259n,"
+    },
+    {
+      "file": "numbers/058.wav",
+      "text": "fifty eight",
+      "synthesis_text": "fifty eight,",
+      "seconds": 0.793,
+      "phonemes": "f\u02c8\u026afti \u02c8At,"
+    },
+    {
+      "file": "numbers/059.wav",
+      "text": "fifty nine",
+      "synthesis_text": "fifty nine,",
+      "seconds": 0.831,
+      "phonemes": "f\u02c8\u026afti n\u02c8In,"
+    },
+    {
+      "file": "numbers/060.wav",
+      "text": "sixty",
+      "synthesis_text": "sixty,",
+      "seconds": 0.681,
+      "phonemes": "s\u02c8\u026aksti,"
+    },
+    {
+      "file": "numbers/075.wav",
+      "text": "seventy five",
+      "synthesis_text": "seventy five,",
+      "seconds": 0.866,
+      "phonemes": "s\u02c8\u025bv\u0259nti f\u02c8Iv,"
+    },
+    {
+      "file": "numbers/076.wav",
+      "text": "seventy six",
+      "synthesis_text": "seventy six,",
+      "seconds": 0.948,
+      "phonemes": "s\u02c8\u025bv\u0259nti s\u02c8\u026aks,"
+    },
+    {
+      "file": "numbers/118.wav",
+      "text": "one hundred eighteen",
+      "synthesis_text": "one hundred eighteen,",
+      "seconds": 1.154,
+      "phonemes": "w\u02c8\u028cn h\u02c8\u028cnd\u0279\u0259d \u02ccAt\u02c8in,"
+    },
+    {
+      "file": "numbers/126.wav",
+      "text": "one hundred twenty six",
+      "synthesis_text": "one hundred twenty six,",
+      "seconds": 1.425,
+      "phonemes": "w\u02c8\u028cn h\u02c8\u028cnd\u0279\u0259d tw\u02c8\u025bnti s\u02c8\u026aks,"
+    },
+    {
+      "file": "routes/uf_health_shands.wav",
+      "text": "UF Health Shands",
+      "synthesis_text": "U F Health Shands,",
+      "seconds": 1.126,
+      "phonemes": "j\u02c8u \u02c8\u025bf h\u02c8\u025bl\u03b8 \u0283\u02c8\u00e6ndz,",
+      "route_number": 8,
+      "stop_id": "0440",
+      "description": "Destination from The Standard Apartments southbound stop"
+    },
+    {
+      "file": "routes/cottage_grove.wav",
+      "text": "Cottage Grove",
+      "synthesis_text": "Cottage Grove,",
+      "seconds": 0.935,
+      "phonemes": "k\u02c8\u0251T\u026a\u02a4 \u0261\u0279\u02c8Ov,",
+      "route_number": 13,
+      "stop_id": "0440",
+      "description": "Destination from The Standard Apartments southbound stop"
+    },
+    {
+      "file": "phrases/arriving_now.wav",
+      "text": "is arriving now",
+      "synthesis_text": "is arriving now.",
+      "seconds": 0.986,
+      "phonemes": "\u026az \u0259\u0279\u02c8Iv\u026a\u014b n\u02c8W."
+    },
+    {
+      "file": "phrases/no_buses_available.wav",
+      "text": "No buses available",
+      "seconds": 1.34,
+      "description": "No-service response supplied by user"
+    }
+  ],
+  "examples": [
+    {
+      "file": "examples/bus_33_butler_plaza_5_minutes.wav",
+      "sequence": [
+        "phrases/bus.wav",
+        "numbers/033.wav",
+        "phrases/for_route.wav",
+        "routes/butler_plaza_to_the_hub.wav",
+        "phrases/will_arrive_in.wav",
+        "numbers/005.wav",
+        "phrases/minutes.wav"
+      ],
+      "inserted_gap_ms": 40
+    },
+    {
+      "file": "examples/bus_21_reitz_union_1_minute.wav",
+      "sequence": [
+        "phrases/bus.wav",
+        "numbers/021.wav",
+        "phrases/for_route.wav",
+        "routes/reitz_union_to_liv_apartments.wav",
+        "phrases/will_arrive_in.wav",
+        "numbers/001.wav",
+        "phrases/minute.wav"
+      ],
+      "inserted_gap_ms": 40
+    }
+  ]
+}

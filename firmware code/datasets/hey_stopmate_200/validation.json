@@ -1,0 +1,14 @@
+{
+  "clips": 200,
+  "training": 160,
+  "testing": 40,
+  "format": "16000 Hz, mono PCM16, 2 seconds",
+  "unique_audio_hashes": 200,
+  "disjoint_synthetic_voices": true,
+  "all_files_valid": true,
+  "all_archives_valid": true,
+  "rms_range": [
+    5.914011181201785e-05,
+    0.10171385377106042
+  ]
+}

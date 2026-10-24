@@ -1,0 +1,9 @@
+.pio/
+.vscode/
+include/secrets.h
+recordings/
+__pycache__/
+*.pyc
+.env
+.env.*
+datasets/**/*.zip
