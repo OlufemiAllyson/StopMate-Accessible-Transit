@@ -1,0 +1,129 @@
+:root {
+  --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #070c18 100%);
+  --card-bg: rgba(15, 23, 42, 0.88);
+  --card-border: rgba(255, 255, 255, 0.14);
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  --focus-ring: #00E5FF;
+}
+
+[data-theme="high-contrast"] {
+  --bg-gradient: #000000;
+  --card-bg: #000000;
+  --card-border: #FFFFFF;
+  --text-main: #FFFFFF;
+  --text-muted: #FFFF00;
+  --focus-ring: #FFFF00;
+}
+
+[data-theme="light"] {
+  --bg-gradient: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --card-border: #CBD5E1;
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --focus-ring: #0284C7;
+}
+
+body {
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* Strict Focus Outline for WCAG AAA */
+*:focus-visible {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 4px !important;
+}
+
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse, .animate-ping, .transition-all {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Enhanced touch & click targets */
+button, input, select {
+  min-height: 48px;
+}
+
+/* High Contrast Mode Styles */
+
+html[data-theme="high-contrast"] body {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+}
+
+html[data-theme="high-contrast"] .text-slate-900,
+html[data-theme="high-contrast"] .text-slate-800,
+html[data-theme="high-contrast"] .text-slate-700,
+html[data-theme="high-contrast"] .text-slate-600,
+html[data-theme="high-contrast"] .text-slate-500,
+html[data-theme="high-contrast"] .text-slate-400 {
+    color: #FFFFFF !important;
+}
+
+html[data-theme="high-contrast"] h1,
+html[data-theme="high-contrast"] h2,
+html[data-theme="high-contrast"] h3,
+html[data-theme="high-contrast"] p,
+html[data-theme="high-contrast"] label,
+html[data-theme="high-contrast"] footer {
+    color: #FFFFFF;
+}
+
+html[data-theme="high-contrast"] .text-cyan-600,
+html[data-theme="high-contrast"] .text-cyan-400,
+html[data-theme="high-contrast"] .text-emerald-600,
+html[data-theme="high-contrast"] .text-emerald-400,
+html[data-theme="high-contrast"] .text-yellow-500,
+html[data-theme="high-contrast"] .text-yellow-400 {
+    color: #FFFF00 !important;
+}
+
+html[data-theme="high-contrast"] .glass-card {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #FFFFFF !important;
+}
+
+html[data-theme="high-contrast"] input {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #FFFFFF !important;
+}
+
+html[data-theme="high-contrast"] input::placeholder {
+    color: #FFFF00 !important;
+    opacity: 1;
+}
+
+html[data-theme="high-contrast"] *:focus-visible {
+    outline: 3px solid #FFFF00 !important;
+    outline-offset: 4px !important;
+}
+
+html[data-theme="high-contrast"] button {
+    color: #FFFFFF;
+}
+
+html[data-theme="high-contrast"] #arrivals-list {
+    color: #FFFFFF;
+}
+
+html[data-theme="high-contrast"] #arrivals-list .text-slate-900,
+html[data-theme="high-contrast"] #arrivals-list .text-slate-800,
+html[data-theme="high-contrast"] #arrivals-list .text-slate-700,
+html[data-theme="high-contrast"] #arrivals-list .text-slate-600,
+html[data-theme="high-contrast"] #arrivals-list .text-slate-500,
+html[data-theme="high-contrast"] #arrivals-list .text-slate-400 {
+    color: #FFFFFF !important;
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StopMate | Gainesville RTS Live Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            transit: {
+              bg: '#070C18',
+              card: '#0F172A',
+              accent: '#00E5FF',
+              green: '#10B981',
+              warning: '#F59E0B',
+              alert: '#EF4444',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans antialiased selection:bg-cyan-500 selection:text-black flex flex-col min-h-screen">
+
+  <!-- Screen Reader Announcements -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Header / Company Logo Bar -->
+  <header class="w-full border-b border-black/10 dark:border-white/10 px-4 py-5 md:px-8 glass-card">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      
+      <!-- Company Logo Placeholder Area -->
+      <div class="flex items-center gap-4">
+        <div class="brand-logo-container flex items-center justify-center p-2 bg-black/5 dark:bg-white rounded-xl border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all">
+          <img 
+            src="stopmate-logo.png" 
+            alt="StopMate Logo" 
+            class="h-40 md:h-42 w-auto max-w-[200px] object-contain"
+            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'h-10 px-4 flex items-center justify-center bg-cyan-500 text-slate-950 font-black tracking-widest rounded-lg text-lg\'>STOPMATE</div>';"
+          />
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            StopMate
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 font-bold uppercase tracking-wider">
+              Accessiblity Made Easy
+            </span>
+          </h1>
+          <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">Gainesville Regional Transit System Companion</p>
+        </div>
+      </div>
+
+      <!-- Theme Switcher & Manual Refresh Controls -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="flex items-center bg-slate-200 dark:bg-slate-900/90 rounded-xl p-1 border border-black/10 dark:border-white/15" role="group" aria-label="Accessibility Theme Options">
+          <button id="theme-dark" onclick="setTheme('dark')" class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-cyan-400 bg-slate-800" aria-label="Dark Theme">Dark</button>
+          <button id="theme-light" onclick="setTheme('light')" class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" aria-label="Light Theme">Light</button>
+          <button id="theme-hc" onclick="setTheme('high-contrast')" class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300" aria-label="High Contrast Theme">High Contrast</button>
+        </div>
+
+        <button onclick="fetchStopData(true)" class="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs md:text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all" aria-label="Refresh departure times now">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Digital Signage Interface -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-6">
+    
+    <!-- Stop Station Card -->
+    <section class="glass-card rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden" aria-labelledby="stop-title">
+      <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-black/10 dark:border-white/10 pb-6">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">Terminal Stop ID</span>
+          <h2 id="stop-title" class="text-2xl md:text-4xl font-black tracking-tight mt-1 text-slate-900 dark:text-white">
+            The Standard Apartments
+          </h2>
+          <p class="text-sm text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-2 font-medium">
+            <span>📍 W University Ave & NW 13th St</span>
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500"></span>
+            <span>Stop #1024</span>
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-full font-extrabold text-xs tracking-wider uppercase" aria-label="Status: Live feed active">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" aria-hidden="true"></span>
+            <span>Live Signage</span>
+          </div>
+          <div id="last-updated" class="text-xs text-slate-700 dark:text-slate-400 font-mono font-bold bg-black/5 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/10 dark:border-white/10">
+            Updated: --:--:--
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Route Filter -->
+      <div class="mt-5 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <label for="route-search" class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">Filter Route:</label>
+          <input type="text" id="route-search" oninput="filterRoutes()" placeholder="e.g. 1, 38..." class="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white rounded-xl px-4 py-2 text-sm focus:border-cyan-500 focus:outline-none w-40 font-mono" aria-label="Filter departures by route number or destination">
+        </div>
+
+        <div class="text-xs text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
+          Active Routes: <span id="visible-count" class="font-extrabold text-cyan-600 dark:text-cyan-400 font-mono text-base">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-Time Arrivals Signage List -->
+    <section aria-label="Upcoming real-time bus arrivals">
+      <div class="flex justify-between items-center mb-3 px-1">
+        <h3 class="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
+          <span>Upcoming Departures</span>
+        </h3>
+        <span class="text-xs text-slate-600 dark:text-slate-400 font-mono font-bold uppercase tracking-wider">ETA Status</span>
+      </div>
+
+      <!-- Departures Container -->
+      <ul id="arrivals-list" class="space-y-3.5" role="list">
+        <!-- Dynamic rendering -->
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-black/10 dark:border-white/10 py-6 px-4 text-center text-xs text-slate-600 dark:text-slate-400 glass-card mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 font-medium">
+      <p>StopMate Public Terminal Companion &middot; Gainesville RTS</p>
+      <p class="font-mono text-slate-600 dark:text-slate-400">WCAG 2.1 AAA Compliant &middot; High Contrast Ready</p>
+    </div>
+  </footer>
+
+  <script src="index.js"></script>
+</body>
+</html>
