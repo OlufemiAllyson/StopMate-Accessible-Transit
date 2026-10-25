@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StopMate | Gainesville RTS Live Terminal</title>
+  <title>StopMate | Device Announcements</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
@@ -56,7 +56,7 @@
           <h1 class="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             StopMate
             <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 font-bold uppercase tracking-wider">
-              Accessiblity Made Easy
+              Accessibility Made Easy
             </span>
           </h1>
           <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">Gainesville Regional Transit System Companion</p>
@@ -71,7 +71,7 @@
           <button id="theme-hc" onclick="setTheme('high-contrast')" class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300" aria-label="High Contrast Theme">High Contrast</button>
         </div>
 
-        <button onclick="fetchStopData(true)" class="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs md:text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all" aria-label="Refresh departure times now">
+        <button onclick="fetchStopData(true)" class="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs md:text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all" aria-label="Refresh the latest device announcement">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span>Refresh</span>
         </button>
@@ -92,43 +92,61 @@
             The Standard Apartments
           </h2>
           <p class="text-sm text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-2 font-medium">
-            <span>📍 W University Ave & NW 13th St</span>
+            <span>Gainesville RTS</span>
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500"></span>
-            <span>Stop #1024</span>
+            <span id="stop-number">Stop #0440</span>
           </p>
         </div>
 
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-full font-extrabold text-xs tracking-wider uppercase" aria-label="Status: Live feed active">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" aria-hidden="true"></span>
-            <span>Live Signage</span>
+          <div class="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-full font-extrabold text-xs tracking-wider uppercase" id="connection-badge" aria-label="Waiting for device">
+            <span id="connection-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400" aria-hidden="true"></span>
+            <span id="feed-status">Waiting for device</span>
           </div>
           <div id="last-updated" class="text-xs text-slate-700 dark:text-slate-400 font-mono font-bold bg-black/5 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/10 dark:border-white/10">
-            Updated: --:--:--
+            No announcement yet
           </div>
         </div>
       </div>
+
+      <form id="stop-form" class="mt-5 space-y-3" onsubmit="switchStop(event)">
+        <label for="stop-select" class="block text-sm font-extrabold">Choose a stop</label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <select id="stop-select" required class="min-w-0 flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/20 rounded-xl px-4 py-3" aria-describedby="stop-help stop-change-status" onchange="updateStopControls()">
+            <option value="0440">0440 — The Standard Apartments</option>
+          </select>
+          <button id="switch-stop" type="submit" disabled class="bg-cyan-500 text-slate-950 font-bold px-5 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed">Switch stop &amp; announce</button>
+        </div>
+        <p id="stop-help" class="text-sm text-slate-600 dark:text-slate-400">Available stops serve inbound routes 8 and 13, which have audio on this device. Other routes at these stops are not announced.</p>
+        <p id="stop-change-status" class="text-sm font-bold" role="status" aria-live="polite">Connect the device to switch stops.</p>
+      </form>
 
       <!-- Interactive Route Filter -->
       <div class="mt-5 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <label for="route-search" class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">Filter Route:</label>
-          <input type="text" id="route-search" oninput="filterRoutes()" placeholder="e.g. 1, 38..." class="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white rounded-xl px-4 py-2 text-sm focus:border-cyan-500 focus:outline-none w-40 font-mono" aria-label="Filter departures by route number or destination">
+          <input type="text" id="route-search" oninput="filterRoutes()" placeholder="e.g. 8, 13..." class="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white rounded-xl px-4 py-2 text-sm focus:border-cyan-500 focus:outline-none w-40 font-mono" aria-label="Filter announced routes by number or destination">
         </div>
 
         <div class="text-xs text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
-          Active Routes: <span id="visible-count" class="font-extrabold text-cyan-600 dark:text-cyan-400 font-mono text-base">0</span>
+          Announced Routes: <span id="visible-count" class="font-extrabold text-cyan-600 dark:text-cyan-400 font-mono text-base">0</span>
         </div>
       </div>
     </section>
 
+    <section class="glass-card rounded-3xl p-6 md:p-8 space-y-3" aria-labelledby="announcement-heading">
+      <h3 id="announcement-heading" class="text-xl font-black">Ready when you are</h3>
+      <div id="announcement-text" class="text-xl md:text-2xl font-bold space-y-2">Your next device announcement will appear here.</div>
+      <p id="connection-note" class="text-sm text-slate-600 dark:text-slate-400">Connect StopMate by USB and start the local server.</p>
+    </section>
+
     <!-- Real-Time Arrivals Signage List -->
-    <section aria-label="Upcoming real-time bus arrivals">
+    <section aria-label="Routes announced by the device">
       <div class="flex justify-between items-center mb-3 px-1">
         <h3 class="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
-          <span>Upcoming Departures</span>
+          <span>Announced routes</span>
         </h3>
-        <span class="text-xs text-slate-600 dark:text-slate-400 font-mono font-bold uppercase tracking-wider">ETA Status</span>
+        <span class="text-xs text-slate-600 dark:text-slate-400 font-mono font-bold uppercase tracking-wider">Announced time</span>
       </div>
 
       <!-- Departures Container -->
@@ -143,7 +161,7 @@
   <footer class="w-full border-t border-black/10 dark:border-white/10 py-6 px-4 text-center text-xs text-slate-600 dark:text-slate-400 glass-card mt-auto">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 font-medium">
       <p>StopMate Public Terminal Companion &middot; Gainesville RTS</p>
-      <p class="font-mono text-slate-600 dark:text-slate-400">WCAG 2.1 AAA Compliant &middot; High Contrast Ready</p>
+      <p class="font-mono text-slate-600 dark:text-slate-400">High Contrast &middot; Screen Reader Support</p>
     </div>
   </footer>
 

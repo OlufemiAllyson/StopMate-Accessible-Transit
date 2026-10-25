@@ -2,6 +2,10 @@
 #include "route_config.h"
 #include <ArduinoJson.h>
 
+// Longer predictions may be displayed in the 60+ LED position. Spoken numeric
+// snippets currently cover 0-60 minutes; values over one day are invalid here.
+constexpr int MAX_PREDICTION_MINUTES = 24 * 60;
+
 struct Arrival {
   size_t routeIndex;
   int minutes;

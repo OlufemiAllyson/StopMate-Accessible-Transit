@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --env-file-if-exists=.env index.js",
+    "local": "node --env-file-if-exists=.env scripts/run-local.js",
+    "test": "node --test test/*.test.js && python3 -m unittest discover -s test -p 'test_*.py'"
   },
   "keywords": [],
   "author": "",

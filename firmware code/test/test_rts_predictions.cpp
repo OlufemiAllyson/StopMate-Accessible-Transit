@@ -27,6 +27,8 @@ int main(int argc, char **argv) {
   assert(!responseIsUsable(R"({})"));
   assert(!responseIsUsable(R"({"prd":[{"stpid":"0440","typ":"A","rt":"8","rtdir":"INBOUND","prdctdn":"DLY"}]})"));
   assert(responseIsUsable(R"({"prd":[{"stpid":"0440","typ":"A","rt":"8","rtdir":"INBOUND","prdctdn":"3"}]})", 1));
+  assert(responseIsUsable(R"({"prd":[{"stpid":"0440","typ":"A","rt":"8","rtdir":"INBOUND","prdctdn":"61"}]})", 1));
+  assert(!responseIsUsable(R"({"prd":[{"stpid":"0440","typ":"A","rt":"8","rtdir":"INBOUND","prdctdn":"1441"}]})"));
   assert(!deserializeJson(doc, R"JSON([
     {"stpid":"0440","typ":"A","rt":"13","rtdir":"INBOUND","prdctdn":"38"},
     {"stpid":"0440","typ":"A","rt":"8","rtdir":"INBOUND","prdctdn":"9"},
@@ -59,7 +61,7 @@ int main(int argc, char **argv) {
     {"stpid":"0440","typ":"A","rt":"8","rtdir":"INBOUND"}
   ])JSON"));
   snapshot = selectArrivals(doc.as<JsonArrayConst>(), "0440");
-  assert(snapshot.count == 2 && snapshot.skipped == 6);
+  assert(snapshot.count == 2 && snapshot.skipped == 5);
   assert(snapshot.arrivals[0].minutes == 0 && snapshot.arrivals[1].minutes == 60);
   assert(MONITORED_ROUTES[snapshot.arrivals[0].routeIndex].audioRoute == Route::CottageGrove);
   assert(!deserializeJson(doc, "[]"));

@@ -1,149 +1,218 @@
-// Configuration & Options
-const STOP_ID = "The-Standard-Apartments";
-const POLL_INTERVAL = 15000;
-
-// Mock RTS Data fallback for offline/preview mode
-const MOCK_DATA = {
-  stopId: "The-Standard-Apartments",
-  nextBuses: [
-    { route: "1", destination: "Butler Plaza Transfer Station", minutesAway: 2, status: "On Time", color: "bg-blue-600" },
-    { route: "38", destination: "UF Health / Oaks Mall", minutesAway: 5, status: "On Time", color: "bg-purple-600" },
-    { route: "5", destination: "Gainesville Mall / Downtown", minutesAway: 11, status: "Delayed 2 min", color: "bg-emerald-600" },
-    { route: "8", destination: "UF Campus Loop / Reitz Union", minutesAway: 18, status: "On Time", color: "bg-amber-600" },
-    { route: "122", destination: "UF Cultural Plaza", minutesAway: 27, status: "On Time", color: "bg-rose-600" }
-  ]
-};
-
+let selectedStopShown = null;
+let switchingStop = false;
+let selectionError = "";
+let currentSnapshot = null;
 let currentData = [];
+let serverAvailable = false;
+let lastSpokenId = null;
+let fetching = false;
 
-// Accessible Theme Switcher
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   document.querySelectorAll('[id^="theme-"]').forEach(btn => {
-    btn.classList.remove('bg-slate-800', 'text-cyan-400', 'text-yellow-400', 'bg-cyan-500', 'text-slate-950');
+    btn.classList.remove('bg-slate-800', 'bg-slate-300', 'text-slate-900', 'text-cyan-400', 'text-yellow-400');
     btn.classList.add('text-slate-600', 'dark:text-slate-400');
   });
-  const activeBtn = document.getElementById(`theme-${theme === 'high-contrast' ? 'hc' : theme}`);
-  if (activeBtn) {
-    if (theme === 'high-contrast') {
-      activeBtn.classList.add('bg-slate-800', 'text-yellow-400');
-    } else if (theme === 'light') {
-      activeBtn.classList.add('bg-slate-300', 'text-slate-900');
-    } else {
-      activeBtn.classList.add('bg-slate-800', 'text-cyan-400');
-    }
-  }
+  const active = document.getElementById(`theme-${theme === 'high-contrast' ? 'hc' : theme}`);
+  active?.classList.add(theme === 'light' ? 'bg-slate-300' : 'bg-slate-800', theme === 'high-contrast' ? 'text-yellow-400' : 'text-cyan-400');
   announceToSR(`Theme switched to ${theme}`);
 }
 
-// Screen Reader Announcer
 function announceToSR(message) {
-  const announcer = document.getElementById('sr-announcer');
-  if (announcer) {
-    announcer.textContent = message;
-  }
+  document.getElementById('sr-announcer').textContent = message;
 }
 
-// Fetch Stop Data with Fallback
 async function fetchStopData(manual = false) {
+  if (fetching) return;
+  fetching = true;
   try {
-    const res = await fetch(`/stop/${STOP_ID}`);
-    if (!res.ok) throw new Error("Server Response Error");
-    const data = await res.json();
-    render(data);
-    if (manual) announceToSR("Arrival schedule updated.");
-  } catch (err) {
-    // Fallback to robust RTS preview data
-    render(MOCK_DATA);
-    if (manual) announceToSR("Refreshed simulated transit updates.");
+    const response = await fetch('/api/state', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Server unavailable');
+    render(await response.json());
+    if (manual) announceToSR('Showing the latest announcement received from StopMate.');
+  } catch {
+    serverAvailable = false;
+    updateConnection();
+    updateStopControls();
+    if (currentSnapshot?.announcements.length) {
+      document.getElementById('announcement-heading').textContent = 'Last received announcement';
+      filterRoutes();
+    }
+    if (!currentSnapshot) showEmpty('Waiting for the StopMate server. No device announcements received.');
+    if (manual) announceToSR('Cannot reach the server. Previous announcements have not been refreshed.');
+  } finally {
+    fetching = false;
   }
 }
 
-// Render Function
+function updateConnection() {
+  const connected = serverAvailable && currentSnapshot?.deviceConnected;
+  const label = !serverAvailable ? 'Server disconnected' : connected ? 'Device connected' : 'Waiting for device';
+  document.getElementById('feed-status').textContent = label;
+  document.getElementById('connection-badge').setAttribute('aria-label', label);
+  document.getElementById('connection-dot').classList.toggle('animate-pulse', Boolean(connected));
+  document.getElementById('connection-note').textContent = !serverAvailable
+    ? 'The server is unavailable. Any announcement below is the last one received.'
+    : !currentSnapshot?.deviceConnected
+      ? 'Connect StopMate by USB and keep the local server running. Any announcement below is the last one received.'
+      : 'Mirroring StopMate. Wave, press the button, or say “Hey StopMate” to request arrivals.';
+}
+
 function render(data) {
-  const arrivalsList = document.getElementById("arrivals-list");
-  const lastUpdated = document.getElementById("last-updated");
-  
-  const buses = data.nextBuses || [];
-  currentData = buses;
-
-  const now = new Date();
-  lastUpdated.textContent = `Updated: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-
-  if (buses.length === 0) {
-    arrivalsList.innerHTML = `
-      <li class="glass-card rounded-2xl p-8 text-center text-slate-700 dark:text-slate-400">
-        <p class="text-lg font-bold text-slate-900 dark:text-white">No Upcoming Departures Scheduled</p>
-        <p class="text-sm mt-1">Please check back later for live transit updates.</p>
-      </li>`;
-    document.getElementById("visible-count").textContent = "0";
-    return;
+  if (!data || typeof data.stopId !== "string" || !Array.isArray(data.announcements)) throw new Error('Invalid snapshot');
+  if (currentSnapshot?.serverId === data.serverId && data.revision < currentSnapshot.revision) return;
+  currentSnapshot = data;
+  document.getElementById('stop-title').textContent = data.stopName;
+  document.getElementById('stop-number').textContent = `Stop #${data.stopId}`;
+  if (selectedStopShown !== data.stopId) {
+    document.getElementById('stop-select').value = data.stopId;
+    document.getElementById('route-search').value = '';
+    selectedStopShown = data.stopId;
+    selectionError = '';
   }
-
+  serverAvailable = true;
+  currentData = data.announcements.filter(item => item.kind === 'arrival');
+  updateConnection();
+  updateStopControls();
+  document.getElementById('last-updated').textContent = data.updatedAt
+    ? `Device update: ${new Date(data.updatedAt).toLocaleTimeString()}` : 'No announcement yet';
+  document.getElementById('last-updated').title = data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '';
+  const titles = {
+    waiting: 'Ready when you are', checking: 'Checking bus arrivals', playing: 'Device announcement',
+    complete: 'Last device announcement', playback_error: 'Device audio could not finish', no_audio: 'No announcement played'
+  };
+  document.getElementById('announcement-heading').textContent = !data.deviceConnected && data.announcements.length
+    ? 'Last received announcement' : titles[data.status] || 'Device announcement';
+  const transcript = document.getElementById('announcement-text');
+  transcript.replaceChildren();
+  for (const item of data.announcements) {
+    const paragraph = document.createElement('p');
+    paragraph.textContent = `${item.text}${item.playback === 'failed' ? ' (Playback interrupted.)' : ''}`;
+    transcript.appendChild(paragraph);
+  }
+  if (!data.announcements.length) {
+    transcript.textContent = data.status === 'checking' ? 'StopMate is requesting the schedule.'
+      : data.status === 'playback_error' ? 'The device could not play the audio.'
+      : data.status === 'no_audio' ? 'This request produced no playable announcements.'
+      : 'Your next device announcement will appear here.';
+  }
+  const latest = data.announcements.at(-1);
+  if (latest && latest.playback !== 'failed' && latest.id !== lastSpokenId) {
+    announceToSR(latest.text);
+    lastSpokenId = latest.id;
+  }
   filterRoutes();
 }
 
-// Filtering & Dynamic List Generation
-function filterRoutes() {
-  const query = document.getElementById("route-search").value.toLowerCase().trim();
-  const filtered = currentData.filter(b => b.route.toLowerCase().includes(query) || b.destination.toLowerCase().includes(query));
-  
-  const arrivalsList = document.getElementById("arrivals-list");
-  document.getElementById("visible-count").textContent = filtered.length;
+function showEmpty(message) {
+  const list = document.getElementById('arrivals-list');
+  const item = document.createElement('li');
+  item.className = 'glass-card rounded-2xl p-8 text-center text-lg font-bold';
+  item.textContent = message;
+  list.replaceChildren(item);
+  document.getElementById('visible-count').textContent = '0';
+}
 
-  if (filtered.length === 0) {
-    arrivalsList.innerHTML = `
-      <li class="glass-card rounded-2xl p-8 text-center text-slate-700 dark:text-slate-400">
-        No active routes matching "${escapeHtml(query)}"
-      </li>`;
+function filterRoutes() {
+  if (!currentData.length) {
+    const noBuses = currentSnapshot?.announcements.some(item => item.kind === 'no_buses' && item.playback !== 'failed');
+    showEmpty(noBuses ? 'No buses available.' : currentSnapshot?.status === 'checking'
+      ? 'Waiting for the device announcement…' : 'No bus routes have been announced for this request.');
     return;
   }
-
-  arrivalsList.innerHTML = filtered.map((bus) => {
-    const isArriving = bus.minutesAway <= 2;
-    const etaText = bus.minutesAway === 0 ? "DUE" : `${bus.minutesAway} <span class="text-xs font-black text-slate-600 dark:text-slate-400">MIN</span>`;
-    const badgeBg = bus.color || 'bg-cyan-600';
-
-    return `
-      <li class="glass-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-8 ${isArriving ? 'border-l-emerald-500' : 'border-l-cyan-500'} hover:border-black/30 dark:hover:border-white/40 transition-all shadow-lg">
-        
-        <div class="flex items-center gap-4 w-full md:w-auto">
-          <!-- Route Badge -->
-          <div class="w-16 h-16 rounded-2xl ${badgeBg} text-white font-black text-2xl md:text-3xl flex items-center justify-center shadow-lg shrink-0 border border-white/20" aria-label="Route ${escapeHtml(bus.route)}">
-            ${escapeHtml(bus.route)}
-          </div>
-
-          <!-- Route Details -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">Destination</span>
-              <span class="text-xs px-2.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 font-mono font-bold border border-black/10 dark:border-white/10">${escapeHtml(bus.status || 'On Time')}</span>
-            </div>
-            <h4 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate mt-0.5">
-              ${escapeHtml(bus.destination)}
-            </h4>
-          </div>
-        </div>
-
-        <!-- Departure Time & Status Indicator -->
-        <div class="flex items-center justify-between md:justify-end w-full md:w-auto gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-black/10 dark:border-white/10">
-          <div class="text-left md:text-right">
-            <div class="text-3xl md:text-4xl font-black font-mono tracking-tight text-slate-900 dark:text-white flex items-baseline gap-1">
-              ${etaText}
-        </div>
-
-      </li>
-    `;
-  }).join("");
+  const query = document.getElementById('route-search').value.toLowerCase().trim();
+  const filtered = currentData.filter(bus => bus.route.toLowerCase().includes(query) || bus.destination.toLowerCase().includes(query));
+  if (!filtered.length) { showEmpty(`No announced routes matching “${query}”.`); return; }
+  document.getElementById('visible-count').textContent = String(filtered.length);
+  document.getElementById('arrivals-list').innerHTML = filtered.map(bus => {
+    const color = /^#[0-9a-f]{6}$/i.test(bus.color) ? bus.color : '#64748b';
+    const channels = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16) / 255)
+      .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    const foreground = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722 > 0.179 ? '#000000' : '#ffffff';
+    const eta = bus.minutesAway === 0 ? 'DUE' : `${Number(bus.minutesAway)} MIN`;
+    const playback = bus.playback === 'started'
+      ? serverAvailable && currentSnapshot.deviceConnected ? 'Announcing now' : 'Playback not confirmed'
+      : bus.playback === 'failed' ? 'Playback interrupted' : 'Announced';
+    return `<li class="glass-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-8 shadow-lg" style="border-left-color:${color}">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl font-black text-3xl flex items-center justify-center shrink-0" style="background-color:${color};color:${foreground}" aria-label="Route ${escapeHtml(bus.route)}">${escapeHtml(bus.route)}</div>
+        <div><p class="text-xs uppercase font-bold text-slate-600 dark:text-slate-400">${playback}</p>
+          <h4 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white">${escapeHtml(bus.destination)}</h4></div>
+      </div>
+      <div class="text-left md:text-right"><p class="text-3xl font-black font-mono">${eta}</p>
+        <p class="text-xs text-slate-600 dark:text-slate-400">Time spoken by StopMate</p></div>
+    </li>`;
+  }).join('');
 }
 
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  })[m]);
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 }
 
+async function loadStops() {
+  try {
+    const response = await fetch('/api/stops');
+    if (!response.ok) throw new Error();
+    const { stops } = await response.json();
+    const select = document.getElementById('stop-select');
+    const previous = select.value;
+    select.replaceChildren(...stops.map(stop => {
+      const option = document.createElement('option');
+      option.value = stop.id;
+      option.textContent = `${stop.id} — ${stop.name} (Route ${stop.routes.join(', ')})`;
+      return option;
+    }));
+    select.value = currentSnapshot?.stopId || previous;
+    updateStopControls();
+  } catch {
+    selectionError = 'Could not load the stop list. Reload the page to try again.';
+    updateStopControls();
+  }
+}
 
-// Initialize & Start Poll Loop
+function updateStopControls() {
+  const state = currentSnapshot;
+  const pending = switchingStop || Boolean(state?.stopSwitch);
+  const busy = ['checking', 'playing'].includes(state?.status);
+  document.getElementById('stop-select').disabled = pending;
+  document.getElementById('switch-stop').disabled = pending || busy || !serverAvailable ||
+    !state?.deviceConnected || !state?.supportsStopSelection || document.getElementById('stop-select').value === state?.stopId;
+  const message = selectionError || state?.stopSelectionError || (state?.stopSwitch
+    ? `Waiting for StopMate to confirm ${state.stopSwitch.stopId} — ${state.stopSwitch.stopName}…`
+    : switchingStop ? 'Sending stop change…'
+    : !serverAvailable || !state?.deviceConnected ? 'Connect the device by USB to switch stops.'
+    : !state.supportsStopSelection ? 'Upload the updated firmware to enable stop switching.'
+    : busy ? 'Wait for the current announcement to finish.'
+    : `Stop ${state.stopId} is active. Switching requests a new announcement and saves the stop on the device.`);
+  document.getElementById('stop-change-status').textContent = message;
+}
+
+async function switchStop(event) {
+  event.preventDefault();
+  if (switchingStop) return;
+  switchingStop = true;
+  selectionError = '';
+  const stopId = document.getElementById('stop-select').value;
+  updateStopControls();
+  try {
+    const response = await fetch('/api/stop', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stopId }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Could not change the stop.');
+    render(result);
+  } catch (error) {
+    selectionError = error.message;
+  } finally {
+    switchingStop = false;
+    updateStopControls();
+  }
+}
+
+loadStops();
 fetchStopData();
-setInterval(fetchStopData, POLL_INTERVAL);
+setInterval(fetchStopData, 5000);
+if ('EventSource' in window) {
+  const events = new EventSource('/events');
+  events.onmessage = event => { try { render(JSON.parse(event.data)); } catch { fetchStopData(); } };
+  events.onerror = () => { fetchStopData(); };
+}

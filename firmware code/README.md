@@ -4,17 +4,39 @@ The ESP32 starts Wi-Fi at boot and keeps it connected during idle listening,
 recording, and announcement playback. It automatically reconnects after a drop;
 the main loop also retries failed connections every 30 seconds without blocking
 voice recognition. Clock synchronization for verified HTTPS starts on connection.
-On each reset, joystick button press, or recognized **Hey StopMate** wake phrase,
+On each ultrasonic hand wave, joystick button press, recognized **Hey StopMate** wake phrase, or Serial
+`schedule` command,
 it requests one arrival snapshot for RTS stop **0440 — The Standard Apartments**
 using the existing connection. It announces the nearest supported inbound bus
 for each configured route, ordered by arrival time. There is no automatic bus
 polling, API retry, or demo playback; reconnecting Wi-Fi does not request arrivals.
+Startup is silent: Wi-Fi and recognition start, the LED ring is cleared, and no
+bus lookup or announcement runs until explicitly requested.
 
 Connect joystick **SW to GPIO 12** and **GND to GND**. The button is active-low
 with an internal pull-up. Both press and release must be stable for **40 ms**.
 Holding it triggers only once. Network lookup and playback are blocking, so
 presses during that work are ignored; release the button after playback before
 pressing again. Each accepted press fetches fresh arrivals.
+
+### Ultrasonic wave trigger
+
+Connect an HC-SR04: **VCC to 5V, GND to GND, TRIG to GPIO18**.
+Connect **ECHO through 1 kΩ to GPIO19**, and connect **2 kΩ from GPIO19 to GND**.
+This divider reduces the sensor's 5V echo to about 3.3V; do not connect ECHO
+directly to the ESP32. These pins assume the camera remains disabled.
+
+Clear the sensing area, then wave your hand **2-30 cm** in front of the sensor.
+Two consecutive near readings (sampled every 70 ms) trigger the same fresh
+arrival lookup, speech, and ring update as the button. The detector recognizes
+an approach, not the direction of a gesture. It requires at least 300 ms of
+clear readings (40+ cm or no echo) before arming, including at startup.
+A held hand does not repeat. After any announcement or blocking Serial operation,
+it waits three seconds and requires fresh clearance; waves during those operations
+are ignored. An object permanently within 40 cm can prevent rearming.
+Each echo wait is capped at 15 ms; voice capture continues on its worker task.
+Pin/timing settings are in `src/ultrasonic_trigger.cpp`; distance, debounce, and
+cooldown settings are in `include/wave_detector.h`.
 
 Current destinations are route **8 → UF Health Shands** and route
 **13 → Cottage Grove**. Arrival times come from the official RTS BusTime v3 API:
@@ -23,12 +45,10 @@ https://riderts.app/bustime/apidoc/docs/DeveloperAPIGuide3_0.pdf
 ## Configure and upload
 
 Copy `include/secrets.example.h` to `include/secrets.h`, then fill in
-`WIFI_SSID`, `WIFI_PASSWORD`, and your RTS `RTS_API_KEY`. Use a 2.4 GHz network;
-leave the password empty only for an open network. The real credentials are
-excluded from Git. Do not commit `secrets.h`.
+`WIFI_SSID`, `WIFI_PASSWORD`, and `RTS_API_KEY`. Use a 2.4 GHz network.
+Leave the password empty only for an open network. Do not commit `secrets.h`.
 
-Install PlatformIO and `ffmpeg`, then run from this `firmware code/` directory
-in a PlatformIO terminal:
+Run from the project directory in a PlatformIO terminal:
 
 ```sh
 pio run
@@ -57,19 +77,116 @@ never disabled. The request does not follow redirects or log the key-bearing URL
 The snapshot selects one nearest prediction per configured route and direction.
 Only matching stop IDs and arrival predictions are used; departures, unknown
 routes/directions, delayed predictions, malformed countdowns, and times above
-60 minutes are skipped. `DUE` or zero uses the recording “is arriving now.”
-Other times use number recordings and the singular/plural minute phrase.
+24 hours are skipped. `DUE` or zero uses the recording “is arriving now.”
+Times from 1 through 60 minutes use number recordings and the singular/plural
+minute phrase. Longer predictions appear in the ring's 60+ position but are not
+spoken, because the existing minute snippets support only 0-60.
 Elapsed download/playback time is subtracted from numeric estimates, rounding
 remaining seconds up to whole minutes. Snapshots older than two minutes are
 not played. A confirmed empty prediction list or RTS `No service scheduled` response plays
 `/phrases/no_buses_available.wav`. Network failures, malformed data, other API
-errors, and lists containing only skipped predictions are logged without claiming
-that no buses exist.
+errors, and lists containing only skipped predictions also display and play the
+same no-buses fallback, as requested. Serial retains the actual failure reason;
+in these cases the fallback does not establish that service is absent.
 
 Audio remains at **50% PCM amplitude**, with 40 ms between snippets. Change
 `VOLUME_PERCENT` in `src/announcement.cpp` if needed. Playback blocks until the
 announcement finishes. `announceArrivals()` performs one lookup per call;
-`src/main.cpp` calls it at startup and on each debounced button press.
+`src/main.cpp` calls it on a wave, button, wake-phrase, or Serial schedule request.
+
+## Arrival LED ring
+
+Connect the Freenove eight-WS2812 module's **IN S to GPIO 21, V to 5V, and G to
+GND**. Leave OUT unconnected. Adafruit NeoPixel 1.15.5 uses the ESP32 RMT
+peripheral, leaving the speaker and microphone I2S ports available.
+
+Rotate the ring so its first LED (D1, library index 0) is at the top. Positions
+follow the module's LED wiring order; `FIRST_LED` and `REVERSE_ORDER` in
+`src/arrival_ring.cpp` can adapt it to another orientation.
+
+| Position | Arrival time at the last request |
+| --- | --- |
+| D1 | Arriving now / DUE |
+| D2 | 1-9 minutes |
+| D3 | 10-19 minutes |
+| D4 | 20-29 minutes |
+| D5 | 30-39 minutes |
+| D6 | 40-49 minutes |
+| D7 | 50-59 minutes |
+| D8 | 60+ minutes |
+
+The nearest arrival of each configured route gets one position. Route colors
+come from RTS BusTime `getroutes`'s `rtclr`, verified on 2026-10-24: route 8 is
+orange `#FF7B00`; route 13 is blue-gray `#49535A`. They are stored alongside
+the route definitions in `include/route_config.h`. LEDs use about 25% brightness.
+
+Two or more routes in one time range alternate their official colors every
+second. A small display task keeps that animation running during playback;
+it never requests predictions or reduces ETAs. Positions remain frozen until
+the next explicit schedule request. The ring clears at the start of a request,
+so a failed lookup cannot leave an old estimate displayed. Confirmed no buses
+also leaves the ring dark and plays the existing no-buses audio.
+
+Wave, use the button, say **Hey StopMate**, or send `schedule` at 115200 baud to update
+both the ring and announcements. Resetting leaves the ring dark and silent.
+
+## LCD1602 arrival display
+
+Connect the I2C LCD1602 backpack's **SDA to GPIO23** and **SCL/SCK to GPIO13**,
+with a common GND. Use the supply voltage required by your LCD module. A typical
+5V LCD1602 backpack needs a bidirectional I2C level shifter between its 5V SDA/SCL
+and the ESP32's 3.3V pins; do not expose ESP32 GPIOs to 5V pull-ups.
+GPIO13 is available with the current 1-bit SD configuration; keep the camera disabled.
+
+The hd44780 1.3.2 library automatically detects the backpack address, using the
+standard Freenove/PCF8574 mapping (RS0, RW1, EN2, backlight3, data4-7).
+Initialization failures are logged and
+leave the other triggers, speech, and LEDs working. If the backlight is on but
+characters are invisible, adjust the backpack's contrast potentiometer.
+
+At startup the screen shows `StopMate 0440` / `Wave for buses`, without fetching
+or speaking. A wave, button, wake phrase, or Serial `schedule` request shows
+`Checking buses`, then the same arrival snapshot used by the LED ring:
+
+```text
+Bus 8: 6 min
+UF Health Shands
+```
+
+The screen cycles through routes with available predictions every **3 seconds**,
+in arrival order. One available route stays displayed. Zero minutes shows `DUE`.
+An empty valid result or failed lookup shows `No buses` / `available` and plays
+the existing no-buses audio. Serial retains lookup failure diagnostics. Values remain
+frozen until the next request, just like the LEDs. No automatic API polling is added.
+A dedicated display task keeps cycling during network/audio/recording work;
+only changed frames are written, with padded lines to erase old characters.
+
+Add destinations through `displayName` in `include/route_config.h` (up to 16
+characters; longer names are truncated). Set pins and the cycling interval in
+`src/arrival_display.cpp`; layout and status text live in `src/arrival_display_model.cpp`.
+
+## Local web companion
+
+The matching GitHub repository's `server/` app mirrors actual device announcements
+over USB Serial. Start it with `npm run local` from that folder (Node.js 22+ and
+Python with pyserial are required), then open http://127.0.0.1:3000. Close Serial
+Monitor and the recording downloader first: only one process can own the USB port.
+The ESP32 keeps using Wi-Fi for RTS; this local web connection does not require
+the computer to be on the same Wi-Fi network.
+
+`src/announcement_events.cpp` emits versioned `STOPMATE_EVENT` JSON lines at
+request start/end and audio start/completion/failure, plus ten-second idle
+heartbeats. Route events use the actual spoken minutes and destination after
+audio files are validated. No-buses playback (including the requested error
+fallback) is mirrored too. Unplayed predictions are not reported as spoken.
+The browser keeps the latest request's announcements, with their original times
+and timestamp; it does not fetch an independent schedule or show mock arrivals.
+
+No new API keys or Wi-Fi credentials are sent over this protocol. Normal boot
+remains silent. USB disconnects do not interrupt standalone device announcements,
+but the website needs the USB bridge running to receive them. The server marks
+the device disconnected after 90 seconds without events. See `server/README.md`
+in the repository for local startup, event schema, and verification instructions.
 
 ## Local voice trigger
 
@@ -158,8 +275,8 @@ corresponding labels. Listen to a few first and keep separate recording
 sessions/speakers for evaluation. This feature collects data; it does not
 retrain or replace the current one-second model.
 
-To copy recordings over USB without removing the card, install `pyserial` in
-your Python environment, close Serial Monitor, and run:
+To copy recordings over USB without removing the card, close Serial Monitor
+and run:
 
 ```sh
 python3 scripts/download_recordings.py
@@ -180,7 +297,7 @@ recognition pauses during each SD operation and then resumes.
    limit, or have a short alias in `scripts/prepare_audio.py`.
 2. Add its `Route` enum value in `include/announcement.h`, and its staged file
    path and display name in `playAnnouncement()` in `src/announcement.cpp`.
-3. Add an API route ID, direction, spoken bus number, and audio enum to
+3. Add an API route ID, direction, spoken bus number, audio enum, RTS RGB color, and LCD destination name to
    `MONITORED_ROUTES` in `include/route_config.h`. This table controls which
    predictions become announcements. Change `RTS_STOP_ID` there for another stop.
 4. Ensure its bus number recording exists and is allowed by the number validation
@@ -245,6 +362,15 @@ These exercise earliest-arrival selection, route/direction/stop filtering,
 deduplication, ordering, DUE handling, delayed vehicles, malformed countdowns,
 and empty results without making API calls.
 
+To test LED time boundaries, route-color collisions, and frozen snapshots:
+
+```sh
+g++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined \
+  -Iinclude -I.pio/libdeps/freenove_esp32_wrover/ArduinoJson/src \
+  test/test_arrival_ring.cpp src/arrival_ring_model.cpp -o .pio/test_arrival_ring
+.pio/test_arrival_ring
+```
+
 To replay the 40 synthetic held-out clips plus silence through the exported
 continuous classifier, run `python3 scripts/check_voice_model.py` (requires
 CMake and a C++ compiler). Results for deployment 2 go to `.pio/ei_host_v2/summary.json` and
@@ -268,4 +394,22 @@ The user-supplied no-buses snippet is staged as 16 kHz mono PCM16. The firmware
 carries a small installation copy and writes it to the SD card only if
 `/phrases/no_buses_available.wav` is absent. It verifies the temporary file before
 renaming it and preserves existing audio. Playback uses SD at the same 50% volume.
-This response applies to startup, button presses, and voice-triggered lookups.
+This response applies to button, voice-triggered, and Serial schedule lookups.
+
+### Selecting the stop from the local website
+
+The website's **Choose a stop → Switch stop & announce** control sends a USB
+command to the ESP32. Firmware validates the stop against `supported_stops.h`,
+saves it in NVS, confirms it to the website, and requests fresh arrivals. The
+selection survives restarts, and startup remains silent. All button, wave, and
+voice requests use this selected stop. The default for a new device is 0440.
+
+The current catalog covers 60 stops serving inbound routes 8 and 13, matching
+the destination audio in `route_config.h`. Other routes at those stops are not
+announced. To expand coverage, add the matching route/direction and audio first,
+then regenerate both the server stop catalog and firmware allowlist with
+`server/scripts/refresh-stops.py`. Upload matching firmware and restart the server.
+
+The serial control syntax is `stop <four-digit-ID> <command-UUID>`; the USB bridge
+manages IDs, acknowledgments, and retries. Repeating the same command ID during
+a boot acknowledges it without replaying audio.

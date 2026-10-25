@@ -1,5 +1,7 @@
 #include "serial_recorder.h"
 #include "voice_trigger.h"
+#include "selected_stop.h"
+#include "announcement_events.h"
 #include <Arduino.h>
 #include <SD_MMC.h>
 #include <cstring>
@@ -10,6 +12,7 @@ constexpr uint32_t RATE = 16000;
 char command[80];
 size_t commandLength = 0;
 bool tooLong = false;
+bool scheduleRequested = false;
 
 void put16(uint8_t *p, uint16_t value) {
   p[0] = value;
@@ -188,6 +191,30 @@ void executeCommand() {
   const char *label = strtok_r(nullptr, " \t", &state);
   const char *duration = strtok_r(nullptr, " \t", &state);
   const char *extra = strtok_r(nullptr, " \t", &state);
+  if (!strcmp(verb, "stop") && label && duration && !extra) {
+    // The bridge retries until acknowledged. Duplicate commands never replay audio.
+    static char lastStopCommand[37] = "";
+    if (strlen(duration) != 36 || strspn(duration, "0123456789abcdef-") != 36) {
+      Serial.println("Invalid stop command ID.");
+      return;
+    }
+    if (!strcmp(lastStopCommand, duration)) {
+      reportStopSelected(duration);
+      return;
+    }
+    if (!selectStop(label)) {
+      Serial.println("Stop selection failed: unsupported stop or storage unavailable.");
+      return;
+    }
+    strlcpy(lastStopCommand, duration, sizeof(lastStopCommand));
+    reportStopSelected(duration);
+    scheduleRequested = true;
+    return;
+  }
+  if (!strcmp(verb, "schedule") && !label) {
+    scheduleRequested = true;
+    return;
+  }
   if (!strcmp(verb, "recordings") && !label) {
     listRecordings();
     return;
@@ -212,11 +239,18 @@ void executeCommand() {
 }
 
 void printRecordingHelp() {
+  Serial.println("Request arrivals and update LEDs: schedule");
   Serial.println("Serial recording: record <hey_stopmate|unknown|noise> [seconds]");
   Serial.println("Default: 2 seconds; range: 1-10. Example: record hey_stopmate");
   Serial.println("Each WAV also includes 300 ms before the cue to preserve the first syllable.");
   Serial.println("Send with Enter/newline. Type help to repeat. Files: /recordings/<label>_NNN.wav");
   Serial.println("List: recordings. USB transfer: download <filename.wav> (use scripts/download_recordings.py).");
+}
+
+bool takeSerialScheduleRequest() {
+  const bool requested = scheduleRequested;
+  scheduleRequested = false;
+  return requested;
 }
 
 bool pollRecordingCommands() {

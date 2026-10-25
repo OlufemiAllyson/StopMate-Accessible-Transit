@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cerrno>
 #include "announcement.h"
+#include "announcement_events.h"
 #include "no_buses_audio.h"
 
 // Freenove Audio Converter & Amplifier: VCC -> 5V, GND -> GND.
@@ -182,11 +183,14 @@ bool playNoBusesAvailable() {
     Serial.printf("Missing/invalid no-buses clip: %s\n", NO_BUSES_PATH);
     return false;
   }
+  reportNoBusesPlayback("started");
   if (!playClip(clip) || !playSilence(200)) {
+    reportNoBusesPlayback("failed");
     stopAudio();
     return false;
   }
   Serial.println("No buses available announcement complete.");
+  reportNoBusesPlayback("completed");
   return true;
 }
 
@@ -255,23 +259,28 @@ bool playAnnouncement(int routeNumber, int minutes, Route route) {
     Serial.printf("Bus %d for route %s will arrive in %d %s.\n",
                   routeNumber, routeName, minutes, minutes == 1 ? "minute" : "minutes");
   }
+  reportArrivalPlayback("started", routeNumber, minutes, routeName);
   for (size_t i = 0; i < count; ++i) {
     if (!playClip(clips[i])) {
+      reportArrivalPlayback("failed", routeNumber, minutes, routeName);
       Serial.printf("Playback failed: %s\n", paths[i]);
       stopAudio();
       return false;
     }
     if (i + 1 < count && !playSilence(GAP_MS)) {
+      reportArrivalPlayback("failed", routeNumber, minutes, routeName);
       stopAudio();
       return false;
     }
   }
   // More than one DMA queue of silence drains the final audio before 'Done'.
   if (!playSilence(200)) {
+    reportArrivalPlayback("failed", routeNumber, minutes, routeName);
     stopAudio();
     return false;
   }
   Serial.println("Announcement complete.");
+  reportArrivalPlayback("completed", routeNumber, minutes, routeName);
   return true;
 }
 

@@ -1,0 +1,434 @@
+{
+  "source": "https://riderts.app/bustime/api/v3/getstops",
+  "verifiedOn": "2026-10-24",
+  "direction": "INBOUND",
+  "stops": [
+    {
+      "id": "1444",
+      "name": "Alight Gainesville Apartments @ NW 12th St",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0437",
+      "name": "All Star Automotive",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0427",
+      "name": "Altrusa House of Gainesville",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0436",
+      "name": "Applebee's @ NW 13th St",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0013",
+      "name": "Beaty Towers",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0680",
+      "name": "Bridge House",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0433",
+      "name": "Brookwood Terrace",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0417",
+      "name": "Capri Neighborhood",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0676",
+      "name": "Chop Stix Cafe",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0678",
+      "name": "Circle K @ Williston Road",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0672",
+      "name": "City College",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0432",
+      "name": "Cobblestone Apartments",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "1264",
+      "name": "Cottage Grove Apartments",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0434",
+      "name": "Direct Auto Insurance",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0670",
+      "name": "Dollar General @ SW 13th St",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0414",
+      "name": "Equilease Shopping Center",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "1359",
+      "name": "Gainesville Healthcare Center",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0247",
+      "name": "Gainesville High School",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0248",
+      "name": "Gainesville High School",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0424",
+      "name": "Girls Place of Alachua County",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0429",
+      "name": "Glen Springs Apartments",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "1550",
+      "name": "Hotel Eleo @ SW 16th Ave Westbound",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0669",
+      "name": "Liv+ Apartments 13th Street",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0662",
+      "name": "McKnight Brain Institute",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0679",
+      "name": "Meridian Behavioral Healthcare",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0409",
+      "name": "North Walmart Supercenter",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "1343",
+      "name": "Northside Park and Senior Recreational Center",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0413",
+      "name": "Northwood Oaks Neighborhood",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0412",
+      "name": "Northwood Pines Neighborhood",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0439",
+      "name": "NW 13th St @ NW 3rd Pl Southbound",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "0430",
+      "name": "NW 21st St @ NW 31st Ave Southbound",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0428",
+      "name": "NW 21st St @ NW 36th Ave Southbound",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0418",
+      "name": "NW 34th St @ NW 41st Ave Southbound",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0425",
+      "name": "NW 39th Ave @ 19th St Green Tree Park",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0419",
+      "name": "NW 39th Ave @ NW 34th St",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0423",
+      "name": "Palmetto Woods Neighborhood",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0403",
+      "name": "Pineridge Circle K Store",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0416",
+      "name": "Pizza Hut @ NW 34th St",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0245",
+      "name": "Plaza Verde @ NW 13th St Southbound",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0252",
+      "name": "Plaza Verde @ NW 23rd Ave",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0426",
+      "name": "Ridgeview Baptist Church",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0435",
+      "name": "State Farm Insurance @ NW 13th St",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0673",
+      "name": "Stayable Select Hotel",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "1420",
+      "name": "SW 13 St @ SW 14th Ave",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "0444",
+      "name": "SW 13th St @ Diamond Rd",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0442",
+      "name": "SW 13th St @ Inner Rd Southbound",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "0671",
+      "name": "SW 13th St @ SW 25th Pl",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0438",
+      "name": "The Gate Food Store @ NW 13th St",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "0677",
+      "name": "The Landings Apartments",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0440",
+      "name": "The Standard Apartments",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "1506",
+      "name": "The Trophy Shop",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0441",
+      "name": "Tigert Hall",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "1595",
+      "name": "UF Health Heart Hospital Garage",
+      "routes": [
+        "8",
+        "13"
+      ]
+    },
+    {
+      "id": "0663",
+      "name": "UF Health Pediatric ER",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0446",
+      "name": "UF Health Shands @ Archer Rd",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0696",
+      "name": "University Police Department",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0422",
+      "name": "Uptown Village Apartments",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0681",
+      "name": "US 441 South",
+      "routes": [
+        "13"
+      ]
+    },
+    {
+      "id": "0420",
+      "name": "Vida Springs Church",
+      "routes": [
+        "8"
+      ]
+    },
+    {
+      "id": "0421",
+      "name": "Walnut Creek Neighborhood",
+      "routes": [
+        "8"
+      ]
+    }
+  ]
+}

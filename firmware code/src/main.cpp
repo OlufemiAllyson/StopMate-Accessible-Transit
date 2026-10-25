@@ -3,6 +3,11 @@
 #include "rts_client.h"
 #include "voice_trigger.h"
 #include "serial_recorder.h"
+#include "arrival_ring.h"
+#include "ultrasonic_trigger.h"
+#include "arrival_display.h"
+#include "announcement_events.h"
+#include "selected_stop.h"
 
 namespace {
 constexpr uint8_t BUTTON_PIN = 12;
@@ -27,18 +32,31 @@ void setup() {
   // Joystick SW connects GPIO 12 to GND when pressed.
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   delay(500);
+  beginSelectedStop();
   beginNetwork();
+  beginArrivalRing();
   audioReady = beginAudio();
-  if (audioReady) announceArrivals();
+  // Initialize the 1-bit SD card before repurposing its unused DAT3/GPIO13.
+  beginArrivalDisplay();
   if (audioReady) beginVoiceTrigger();
   printRecordingHelp();
   waitForButtonRelease();
+  beginUltrasonicTrigger();
+  beginAnnouncementEvents();
+  Serial.println("Ready: wave, press the button, say Hey StopMate, or type schedule. No startup lookup or announcement.");
 }
 
 void loop() {
+  serviceAnnouncementEvents();
   serviceNetwork();
-  if (pollRecordingCommands()) waitForButtonRelease();
-  bool announce = audioReady && takeVoiceTrigger();
+  if (pollRecordingCommands()) {
+    waitForButtonRelease();
+    resetUltrasonicTrigger();
+  }
+  const bool serialRequest = takeSerialScheduleRequest();
+  const bool voiceRequest = takeVoiceTrigger();
+  const bool waveRequest = pollUltrasonicTrigger();
+  bool announce = audioReady && (voiceRequest || serialRequest || waveRequest);
   const int reading = digitalRead(BUTTON_PIN);
   const uint32_t now = millis();
   if (reading != lastReading) {
@@ -63,6 +81,7 @@ void loop() {
     announceArrivals();
     resumeVoiceTrigger();
     waitForButtonRelease();
+    resetUltrasonicTrigger();
   }
   idleAudio();
 }

@@ -1,6 +1,10 @@
 #include "rts_client.h"
+#include "selected_stop.h"
 #include "rts_predictions.h"
 #include "rts_root_ca.h"
+#include "arrival_ring.h"
+#include "arrival_display.h"
+#include "announcement_events.h"
 #include "secrets.h"
 #include <Arduino.h>
 #include <HTTPClient.h>
@@ -94,7 +98,7 @@ bool fetchArrivals(ArrivalSnapshot &snapshot, uint32_t &requestedAt) {
   http.setTimeout(10000);
   http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
   const String url = String(RTS_PREDICTIONS_URL) + "?format=json&stpid=" +
-                     urlEncode(RTS_STOP_ID) + "&top=20&key=" + urlEncode(RTS_API_KEY);
+                     urlEncode(selectedStopId()) + "&top=20&key=" + urlEncode(RTS_API_KEY);
   // Never log this URL: the BusTime protocol puts its key in the query string.
   if (!http.begin(tls, url)) {
     Serial.println("Could not initialize the RTS HTTPS request.");
@@ -131,7 +135,7 @@ bool fetchArrivals(ArrivalSnapshot &snapshot, uint32_t &requestedAt) {
     Serial.println("RTS response is missing bustime-response.");
     return false;
   }
-  if (!parseArrivalResponse(response, RTS_STOP_ID, snapshot)) {
+  if (!parseArrivalResponse(response, selectedStopId(), snapshot)) {
     // Do not print server error strings, which might echo request credentials.
     Serial.println("RTS response unavailable, invalid, or contains only unsupported predictions.");
     return false;
@@ -185,15 +189,30 @@ void serviceNetwork() {
 }
 
 void announceArrivals() {
+  beginAnnouncementRequest();
+  clearArrivalRing();  // A failed request must not leave an old estimate lit.
+  showArrivalDisplayLoading();
   ArrivalSnapshot snapshot;
   uint32_t requestedAt = 0;
   // fetchArrivals releases its HTTP/TLS objects; the Wi-Fi connection stays up.
-  if (!connectNetwork() || !fetchArrivals(snapshot, requestedAt)) return;
-  if (!snapshot.count) {
-    Serial.printf("No buses available at stop %s.\n", RTS_STOP_ID);
-    if (!playNoBusesAvailable()) Serial.println("Could not play the no-buses announcement.");
+  if (!connectNetwork() || !fetchArrivals(snapshot, requestedAt)) {
+    showArrivalDisplayError();
+    Serial.println("Schedule unavailable; playing the requested no-buses fallback.");
+    const bool played = playNoBusesAvailable();
+    if (!played) Serial.println("Could not play the no-buses announcement.");
+    finishAnnouncementRequest(played);
     return;
   }
+  showArrivalRing(snapshot);
+  showArrivalDisplay(snapshot);
+  if (!snapshot.count) {
+    Serial.printf("No buses available at stop %s.\n", selectedStopId());
+    const bool played = playNoBusesAvailable();
+    if (!played) Serial.println("Could not play the no-buses announcement.");
+    finishAnnouncementRequest(played);
+    return;
+  }
+  bool playbackSucceeded = true;
   for (size_t i = 0; i < snapshot.count; ++i) {
     const Arrival &arrival = snapshot.arrivals[i];
     // Avoid announcing an ETA that expired while connecting/downloading/playing.
@@ -207,9 +226,16 @@ void announceArrivals() {
     if (arrival.minutes > 0 && secondsLeft < -60) continue;
     const int minutesLeft = secondsLeft <= 0 ? 0 : (secondsLeft + 59) / 60;
     const auto &route = MONITORED_ROUTES[arrival.routeIndex];
+    if (minutesLeft > 60) {
+      Serial.printf("Route %s: %d minutes shown on LED D8; speech supports up to 60 minutes.\n",
+                    route.apiRoute, minutesLeft);
+      continue;
+    }
     if (!playAnnouncement(route.spokenNumber, minutesLeft, route.audioRoute)) {
+      playbackSucceeded = false;
       Serial.printf("Could not announce route %s.\n", route.apiRoute);
     }
   }
   Serial.println("Arrivals complete. Press the button for another announcement.");
+  finishAnnouncementRequest(playbackSucceeded);
 }

@@ -30,7 +30,7 @@ namespace {
 bool parseMinutes(JsonVariantConst value, int &minutes) {
   if (value.is<int>()) {
     minutes = value.as<int>();
-    return minutes >= 0 && minutes <= 60;
+    return minutes >= 0 && minutes <= MAX_PREDICTION_MINUTES;
   }
   const char *text = value.as<const char *>();
   if (!text || !*text) return false;
@@ -39,7 +39,7 @@ bool parseMinutes(JsonVariantConst value, int &minutes) {
   for (; *text; ++text) {
     if (*text < '0' || *text > '9') return false;
     result = result * 10 + (*text - '0');
-    if (result > 60) return false;
+    if (result > MAX_PREDICTION_MINUTES) return false;
   }
   minutes = result;
   return true;
