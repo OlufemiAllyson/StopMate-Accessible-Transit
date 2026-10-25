@@ -100,7 +100,8 @@ the selector's route-support description to match the audio table.
 - The bridge retries local delivery up to three times. A failed delivery is logged;
   the next device request resynchronizes the view. A completion event contains the
   full announcement and can recover a missed start event.
-- This is a **USB-based local integration**, not a deployed wireless connection.
+- The USB bridge can relay to the local server or the Fly.io deployment. The ESP32
+  still needs this computer and its USB connection; it does not contact Fly directly.
 
 ## API and event protocol
 
@@ -145,3 +146,58 @@ authentication, input limits, and delivery through both HTTP and SSE.
 Stop-control tests also cover pending/confirmed/late changes, old firmware, busy
 and disconnected devices, duplicate acknowledgments, origin checks, and a real
 Express-to-USB-pseudoterminal-to-Express control round trip.
+
+## Fly.io deployment
+
+Live URL: **https://stopmate-accessible-transit.fly.dev**.
+
+The container runs only Express. The USB bridge runs on the computer attached to
+the ESP32 and posts events over HTTPS to Fly.io. The ESP32 still fetches RTS using
+its configured hotspot. No firmware change or RTS key on the server is needed.
+
+To start the configured remote bridge on this computer, close Serial Monitor and
+any local bridge, then run from `server/`:
+
+```sh
+npm run bridge
+```
+
+Keep that terminal open and the board connected. Stop with Ctrl+C before using
+Serial Monitor. `npm run bridge -- --test-request` sends one explicit schedule
+request after the first ready/heartbeat event; normal bridge startup is silent.
+`npm run local` still runs an independent local dashboard instead of the Fly bridge.
+Only one bridge/serial monitor should own the board at a time. If the bridge was
+started in the background, stop it with `pkill -f '[s]cripts/run-bridge.js'` before
+opening Serial Monitor.
+
+The private `.env.bridge` file holds `STOPMATE_SERVER_URL` and
+`DEVICE_INGEST_TOKEN`. For another computer, install the requirements and create
+that file locally using the same device token configured as a Fly secret.
+Do not commit this file. Public deployment and bridge endpoints require HTTPS;
+HTTP is accepted only for localhost development.
+
+Viewing announcements is public. Changing the physical device's stop requires
+**Stop-control access code**, stored on this computer in
+`.data/stop-control-code.txt`. Enter it in the website's password field; it is not
+saved in browser storage. The independent `STOP_CONTROL_TOKEN` Fly secret
+protects `POST /api/stop`; the device ingest token does not grant stop-control
+access. The bridge never needs the operator code. Production startup refuses
+missing secrets or a missing `PUBLIC_ORIGIN`.
+
+Deployment files are `Dockerfile`, `.dockerignore`, and `fly.toml`. The image
+includes only the server and public assets, without local credentials, firmware,
+recordings, logs, or the USB bridge. The app uses one shared CPU with 256 MB RAM in
+Dallas. Configure `DEVICE_INGEST_TOKEN` and `STOP_CONTROL_TOKEN` with Fly secrets,
+then deploy:
+
+```sh
+fly deploy --local-only --ha=false
+```
+
+Use exactly **one machine**: announcement state and pending control commands are
+in memory. Automatic stopping is disabled to preserve the live session; a deploy
+or machine restart clears the dashboard until subsequent device events arrive.
+Do not scale to multiple machines without adding shared state. `GET /healthz`
+checks server health independently of whether a board is connected. The HTTPS
+origin in `PUBLIC_ORIGIN` is used for control requests behind Fly's TLS proxy;
+update it if moving to a custom domain.

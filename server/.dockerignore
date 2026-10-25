@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!package.json
+!package-lock.json
+!index.js
+!announcement-store.js
+!stops.json
+!public/
+!public/**
+public/fly.toml

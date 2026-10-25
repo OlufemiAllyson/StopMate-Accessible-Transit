@@ -185,3 +185,27 @@ test('stop controls validate origin and IDs, authenticate command reads, and exp
   assert.equal((await fetch(`${base}/stop/0440`)).status, 404);
   assert.equal((await fetch(`${base}/stop/0441`)).status, 200);
 });
+
+test('hosted controls require their own key and accept the HTTPS public origin behind a proxy', async t => {
+  const store = createAnnouncementStore();
+  store.ingest(event(1, 'ready', { supportsStopSelection: true }));
+  const server = createApp({ store, token: 'device-only', controlToken: 'operator-only',
+    publicOrigin: 'https://stopmate.example' }).listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const select = (key, origin = 'https://stopmate.example') => fetch(`${base}/api/stop`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin, 'X-StopMate-Control': key },
+    body: JSON.stringify({ stopId: '0441' })
+  });
+  assert.equal((await fetch(`${base}/healthz`)).status, 200);
+  const catalog = await (await fetch(`${base}/api/stops`)).json();
+  assert.equal(catalog.controlsRequireKey, true);
+  assert.equal(JSON.stringify(catalog).includes('operator-only'), false);
+  assert.equal((await select('')).status, 401);
+  assert.equal((await select('device-only')).status, 401);
+  assert.equal((await select('operator-only', 'https://attacker.example')).status, 403);
+  assert.equal((await select('operator-only')).status, 202);
+  assert.equal((await fetch(`${base}/api/device/command`, {headers: {Authorization:'Bearer operator-only'}})).status, 401);
+  assert.equal((await fetch(`${base}/api/device/command`, {headers: {Authorization:'Bearer device-only'}})).status, 200);
+});

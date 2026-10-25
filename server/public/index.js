@@ -1,3 +1,5 @@
+let controlsRequireKey = false;
+let stopsLoaded = false;
 let selectedStopShown = null;
 let switchingStop = false;
 let selectionError = "";
@@ -54,7 +56,7 @@ function updateConnection() {
   document.getElementById('connection-note').textContent = !serverAvailable
     ? 'The server is unavailable. Any announcement below is the last one received.'
     : !currentSnapshot?.deviceConnected
-      ? 'Connect StopMate by USB and keep the local server running. Any announcement below is the last one received.'
+      ? 'Keep StopMate connected to its USB bridge. Any announcement below is the last one received.'
       : 'Mirroring StopMate. Wave, press the button, or say “Hey StopMate” to request arrivals.';
 }
 
@@ -153,7 +155,10 @@ async function loadStops() {
   try {
     const response = await fetch('/api/stops');
     if (!response.ok) throw new Error();
-    const { stops } = await response.json();
+    const { stops, controlsRequireKey: requiresKey } = await response.json();
+    controlsRequireKey = Boolean(requiresKey);
+    document.getElementById('control-access').hidden = !controlsRequireKey;
+    stopsLoaded = true;
     const select = document.getElementById('stop-select');
     const previous = select.value;
     select.replaceChildren(...stops.map(stop => {
@@ -175,14 +180,15 @@ function updateStopControls() {
   const pending = switchingStop || Boolean(state?.stopSwitch);
   const busy = ['checking', 'playing'].includes(state?.status);
   document.getElementById('stop-select').disabled = pending;
-  document.getElementById('switch-stop').disabled = pending || busy || !serverAvailable ||
+  document.getElementById('switch-stop').disabled = pending || busy || !stopsLoaded || (controlsRequireKey && !document.getElementById('control-key').value) || !serverAvailable ||
     !state?.deviceConnected || !state?.supportsStopSelection || document.getElementById('stop-select').value === state?.stopId;
   const message = selectionError || state?.stopSelectionError || (state?.stopSwitch
     ? `Waiting for StopMate to confirm ${state.stopSwitch.stopId} — ${state.stopSwitch.stopName}…`
     : switchingStop ? 'Sending stop change…'
-    : !serverAvailable || !state?.deviceConnected ? 'Connect the device by USB to switch stops.'
+    : !serverAvailable || !state?.deviceConnected ? 'The device’s USB bridge must be connected to switch stops.'
     : !state.supportsStopSelection ? 'Upload the updated firmware to enable stop switching.'
     : busy ? 'Wait for the current announcement to finish.'
+    : controlsRequireKey && !document.getElementById('control-key').value ? 'Enter the access code to change the device’s stop. Announcements are public.'
     : `Stop ${state.stopId} is active. Switching requests a new announcement and saves the stop on the device.`);
   document.getElementById('stop-change-status').textContent = message;
 }
@@ -196,7 +202,9 @@ async function switchStop(event) {
   updateStopControls();
   try {
     const response = await fetch('/api/stop', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stopId }) });
+      headers: { 'Content-Type': 'application/json',
+        ...(controlsRequireKey ? { 'X-StopMate-Control': document.getElementById('control-key').value } : {}) },
+      body: JSON.stringify({ stopId }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Could not change the stop.');
     render(result);

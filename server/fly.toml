@@ -1,0 +1,34 @@
+app = 'stopmate-accessible-transit'
+primary_region = 'dfw'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  NODE_ENV = 'production'
+  HOST = '0.0.0.0'
+  PORT = '8080'
+  PUBLIC_ORIGIN = 'https://stopmate-accessible-transit.fly.dev'
+
+# In-memory announcement state requires exactly one machine. No HA clone.
+[deploy]
+  strategy = 'immediate'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = '10s'
+    interval = '30s'
+    method = 'GET'
+    timeout = '5s'
+    path = '/healthz'
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1

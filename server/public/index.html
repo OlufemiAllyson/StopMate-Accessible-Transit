@@ -117,6 +117,11 @@
           </select>
           <button id="switch-stop" type="submit" disabled class="bg-cyan-500 text-slate-950 font-bold px-5 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed">Switch stop &amp; announce</button>
         </div>
+        <div id="control-access" hidden>
+          <label for="control-key" class="block text-sm font-bold mb-2">Stop-control access code</label>
+          <input id="control-key" type="password" autocomplete="off" maxlength="128" oninput="updateStopControls()" class="w-full sm:w-80 bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/20 rounded-xl px-4 py-3" aria-describedby="control-help">
+          <p id="control-help" class="text-sm text-slate-600 dark:text-slate-400 mt-2">Only the device operator can change stops. The code stays in this tab until you close or reload it.</p>
+        </div>
         <p id="stop-help" class="text-sm text-slate-600 dark:text-slate-400">Available stops serve inbound routes 8 and 13, which have audio on this device. Other routes at these stops are not announced.</p>
         <p id="stop-change-status" class="text-sm font-bold" role="status" aria-live="polite">Connect the device to switch stops.</p>
       </form>
@@ -137,7 +142,7 @@
     <section class="glass-card rounded-3xl p-6 md:p-8 space-y-3" aria-labelledby="announcement-heading">
       <h3 id="announcement-heading" class="text-xl font-black">Ready when you are</h3>
       <div id="announcement-text" class="text-xl md:text-2xl font-bold space-y-2">Your next device announcement will appear here.</div>
-      <p id="connection-note" class="text-sm text-slate-600 dark:text-slate-400">Connect StopMate by USB and start the local server.</p>
+      <p id="connection-note" class="text-sm text-slate-600 dark:text-slate-400">Waiting for the StopMate USB bridge to connect.</p>
     </section>
 
     <!-- Real-Time Arrivals Signage List -->

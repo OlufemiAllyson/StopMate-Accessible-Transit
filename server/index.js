@@ -4,10 +4,16 @@ const { timingSafeEqual } = require("node:crypto");
 const { stops } = require("./stops.json");
 const { createAnnouncementStore } = require("./announcement-store");
 
-function createApp({ token = process.env.DEVICE_INGEST_TOKEN, store = createAnnouncementStore() } = {}) {
+function createApp({ token = process.env.DEVICE_INGEST_TOKEN, controlToken = process.env.STOP_CONTROL_TOKEN,
+  publicOrigin = process.env.PUBLIC_ORIGIN, store = createAnnouncementStore() } = {}) {
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "4kb" }));
+  app.get("/healthz", (req, res) => res.json({ ok: true }));
+  function matchesSecret(supplied, expected) {
+    const a = Buffer.from(supplied || ""), b = Buffer.from(expected || "");
+    return a.length === b.length && timingSafeEqual(a, b);
+  }
   app.get("/stop/:id", (req, res) => {
     res.set("Cache-Control", "no-store");
     if (req.params.id !== store.snapshot().stopId) return res.status(404).json({ error: "Stop not found" });
@@ -21,15 +27,18 @@ function createApp({ token = process.env.DEVICE_INGEST_TOKEN, store = createAnno
       return res.status(401).json({ error: "Unauthorized" });
     next();
   }
-  app.get("/api/stops", (req, res) => res.json({ stops, direction: "INBOUND", routes: ["8", "13"] }));
+  app.get("/api/stops", (req, res) => res.json({ stops, direction: "INBOUND", routes: ["8", "13"], controlsRequireKey: Boolean(controlToken) }));
   app.get("/api/state", (req, res) => {
     res.set("Cache-Control", "no-store").json(store.snapshot());
   });
   app.post("/api/stop", (req, res) => {
-    // Browser control is same-origin only; no device token is sent to the browser.
+    // Fly terminates TLS before forwarding HTTP. Compare with the configured
+    // public origin instead of trusting client-supplied forwarding headers.
     const origin = req.get("origin");
-    if (origin && origin !== `${req.protocol}://${req.get("host")}`)
-      return res.status(403).json({ error: "Use the local StopMate website to switch stops." });
+    if (origin && origin !== (publicOrigin || `${req.protocol}://${req.get("host")}`))
+      return res.status(403).json({ error: "Use the StopMate website to switch stops." });
+    if (controlToken && !matchesSecret(req.get("x-stopmate-control"), controlToken))
+      return res.status(401).json({ error: "Enter the stop-control access code to switch stops." });
     if (!req.is("application/json") || !stops.some(stop => stop.id === req.body?.stopId))
       return res.status(400).json({ error: "Choose a supported RTS stop." });
     try { res.status(202).json(store.selectStop(req.body.stopId)); }
@@ -63,6 +72,9 @@ function createApp({ token = process.env.DEVICE_INGEST_TOKEN, store = createAnno
 }
 
 function startServer() {
+  if (process.env.NODE_ENV === "production" &&
+      (!process.env.DEVICE_INGEST_TOKEN || !process.env.STOP_CONTROL_TOKEN || !process.env.PUBLIC_ORIGIN))
+    throw new Error("Production requires DEVICE_INGEST_TOKEN, STOP_CONTROL_TOKEN, and PUBLIC_ORIGIN");
   const port = Number(process.env.PORT || 3000);
   const host = process.env.HOST || "127.0.0.1";
   return createApp().listen(port, host, () => console.log(`StopMate: http://${host}:${port}`));

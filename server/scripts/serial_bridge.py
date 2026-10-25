@@ -1,4 +1,4 @@
-"""Relay versioned ESP32 announcement events to the local web server."""
+"""Relay versioned ESP32 announcement events to a local or hosted web server."""
 import argparse
 import json
 import os
@@ -7,6 +7,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 
 import serial
 from serial.tools import list_ports
@@ -20,6 +21,9 @@ def main():
     parser.add_argument("--url", default="http://127.0.0.1:3000/api/device/events")
     parser.add_argument("--test-request", action="store_true", help="Send one explicit schedule request for an integration test")
     args = parser.parse_args()
+    target = urllib.parse.urlparse(args.url)
+    if (target.scheme != "https" and not (target.scheme == "http" and target.hostname in ("127.0.0.1", "localhost", "::1"))) or target.username or target.password or target.query or target.fragment or target.path != "/api/device/events":
+        parser.error("Use an HTTPS /api/device/events URL (HTTP is allowed only on localhost)")
     token = os.environ.get("DEVICE_INGEST_TOKEN")
     if not token:
         parser.error("DEVICE_INGEST_TOKEN is required (npm run local sets it automatically)")
@@ -48,11 +52,11 @@ def main():
                 while True:
                     now = time.monotonic()
                     if supports_selection and now >= next_command_poll:
-                        next_command_poll = now + 0.5
+                        next_command_poll = now + 1.0
                         control = urllib.request.Request(args.url.rsplit("/", 1)[0] + "/command",
                             headers={"Authorization": f"Bearer {token}"})
                         try:
-                            with urllib.request.urlopen(control, timeout=1) as response:
+                            with urllib.request.urlopen(control, timeout=2) as response:
                                 command = json.load(response).get("command")
                             if (isinstance(command, dict) and
                                 re.fullmatch(r"[0-9]{4}", str(command.get("stopId", ""))) and
@@ -90,7 +94,7 @@ def main():
                         "Content-Type": "application/json", "Authorization": f"Bearer {token}"})
                     for attempt in range(3):
                         try:
-                            with urllib.request.urlopen(request, timeout=2) as response:
+                            with urllib.request.urlopen(request, timeout=5) as response:
                                 response.read()
                             if event.get("type") != "heartbeat":
                                 print(f"WEB: {event.get('type')} {event.get('phase', '')}", flush=True)
