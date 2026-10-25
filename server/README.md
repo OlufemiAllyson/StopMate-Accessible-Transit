@@ -47,7 +47,7 @@ Stop it with Ctrl+C before uploading firmware or using Serial Monitor.
 
 ## Switch stops from the website
 
-Use **Choose a stop**, then **Switch stop & announce**. The site sends a command
+Expand **Change stop**, use **Choose a stop**, then **Switch stop & announce**. The site sends a command
 through the USB bridge, waits for the device to confirm, then displays its fresh
 announcement. The active stop name and old announcements stay together until that
 confirmation; once confirmed, the previous stop's announcements are cleared.

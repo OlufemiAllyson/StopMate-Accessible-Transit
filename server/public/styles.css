@@ -31,7 +31,7 @@ body {
   min-height: 100vh;
 }
 
-/* Strict Focus Outline for WCAG AAA */
+/* Visible keyboard focus in every theme. */
 *:focus-visible {
   outline: 3px solid var(--focus-ring) !important;
   outline-offset: 4px !important;
@@ -95,7 +95,8 @@ html[data-theme="high-contrast"] .glass-card {
     border: 2px solid #FFFFFF !important;
 }
 
-html[data-theme="high-contrast"] input {
+html[data-theme="high-contrast"] input,
+html[data-theme="high-contrast"] select {
     background: #000000 !important;
     color: #FFFFFF !important;
     border: 2px solid #FFFFFF !important;
@@ -126,4 +127,94 @@ html[data-theme="high-contrast"] #arrivals-list .text-slate-600,
 html[data-theme="high-contrast"] #arrivals-list .text-slate-500,
 html[data-theme="high-contrast"] #arrivals-list .text-slate-400 {
     color: #FFFFFF !important;
+}
+
+/* Reflow the interface instead of hiding overflow or disabling zoom. */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.brand-logo-container { flex: 0 0 auto; }
+.brand-logo { width: 6rem; height: 5rem; object-fit: contain; }
+.brand-copy, .arrival-route, .arrival-destination { min-width: 0; }
+.brand-title { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.brand-tagline { display: inline-block; max-width: 100%; }
+.header-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.theme-switcher { flex-wrap: wrap; }
+.device-status { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+#connection-dot { flex-shrink: 0; }
+#stop-title, #announcement-text, #last-updated, .arrival-destination, footer p {
+  overflow-wrap: anywhere;
+}
+.stop-settings summary {
+  cursor: pointer;
+  min-height: 48px;
+  padding: .75rem .25rem;
+}
+.stop-settings[open] summary { border-bottom: 1px solid var(--card-border); }
+#stop-select { width: 100%; max-width: 100%; text-overflow: ellipsis; }
+.route-filter { min-width: 0; }
+#route-search { min-width: 0; }
+.arrivals-heading { flex-wrap: wrap; gap: .5rem 1rem; }
+.arrival-route { max-width: 100%; }
+.arrival-card { overflow-wrap: anywhere; }
+
+@media (max-width: 639px) {
+  .site-header { gap: 1rem; }
+  .brand { gap: .75rem; width: 100%; }
+  .brand-logo { width: 3.75rem; height: 3.75rem; }
+  .brand-title { font-size: 1.875rem; line-height: 1.15; }
+  .brand-tagline {
+    font-size: .625rem;
+    line-height: 1.5;
+    letter-spacing: .025em;
+    padding-inline: .375rem;
+  }
+  .brand-copy > p { margin-top: .375rem; line-height: 1.5; }
+  .header-controls, .theme-switcher { width: 100%; }
+  .theme-switcher button { flex: 1 1 auto; padding-inline: .5rem; }
+  .header-controls > button { justify-content: center; width: 100%; }
+  .stop-card, .announcement-card { padding: 1rem; border-radius: 1rem; }
+  .device-status { gap: .5rem; }
+  #last-updated { font-size: .75rem; }
+  .route-filter { flex-wrap: wrap; gap: .5rem; }
+  .route-filter label { width: 100%; }
+  #route-search { width: 100%; }
+  /* 16px prevents automatic input zoom on iOS while preserving user zoom. */
+  input, select { font-size: 1rem !important; }
+  #switch-stop { width: 100%; }
+  .arrival-route { align-items: flex-start; gap: .75rem; }
+  .arrival-card { padding: 1rem; }
+  .arrival-card h4 { font-size: 1.125rem; line-height: 1.5; }
+}
+
+/* Keep theme selection legible and expose its state to assistive technology. */
+html[data-theme="light"] .theme-switcher button[aria-pressed="true"] {
+  color: #0f172a !important;
+}
+html[data-theme="high-contrast"] .theme-switcher {
+  background: #000;
+  border-color: #fff;
+}
+html[data-theme="high-contrast"] .theme-switcher button {
+  background: #000;
+  color: #fff !important;
+}
+html[data-theme="high-contrast"] .theme-switcher button[aria-pressed="true"] {
+  background: #ffff00;
+  color: #000 !important;
+}
+html[data-theme="high-contrast"] .header-controls > button,
+html[data-theme="high-contrast"] #switch-stop {
+  color: #000;
 }

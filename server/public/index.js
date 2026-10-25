@@ -12,10 +12,12 @@ let fetching = false;
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   document.querySelectorAll('[id^="theme-"]').forEach(btn => {
+    btn.setAttribute('aria-pressed', 'false');
     btn.classList.remove('bg-slate-800', 'bg-slate-300', 'text-slate-900', 'text-cyan-400', 'text-yellow-400');
     btn.classList.add('text-slate-600', 'dark:text-slate-400');
   });
   const active = document.getElementById(`theme-${theme === 'high-contrast' ? 'hc' : theme}`);
+  active?.setAttribute('aria-pressed', 'true');
   active?.classList.add(theme === 'light' ? 'bg-slate-300' : 'bg-slate-800', theme === 'high-contrast' ? 'text-yellow-400' : 'text-cyan-400');
   announceToSR(`Theme switched to ${theme}`);
 }
@@ -135,10 +137,10 @@ function filterRoutes() {
     const playback = bus.playback === 'started'
       ? serverAvailable && currentSnapshot.deviceConnected ? 'Announcing now' : 'Playback not confirmed'
       : bus.playback === 'failed' ? 'Playback interrupted' : 'Announced';
-    return `<li class="glass-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-8 shadow-lg" style="border-left-color:${color}">
-      <div class="flex items-center gap-4">
+    return `<li class="arrival-card glass-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-8 shadow-lg" style="border-left-color:${color}">
+      <div class="arrival-route flex items-center gap-4">
         <div class="w-16 h-16 rounded-2xl font-black text-3xl flex items-center justify-center shrink-0" style="background-color:${color};color:${foreground}" aria-label="Route ${escapeHtml(bus.route)}">${escapeHtml(bus.route)}</div>
-        <div><p class="text-xs uppercase font-bold text-slate-600 dark:text-slate-400">${playback}</p>
+        <div class="arrival-destination"><p class="text-xs uppercase font-bold text-slate-600 dark:text-slate-400">${playback}</p>
           <h4 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white">${escapeHtml(bus.destination)}</h4></div>
       </div>
       <div class="text-left md:text-right"><p class="text-3xl font-black font-mono">${eta}</p>
